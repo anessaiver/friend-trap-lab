@@ -1,0 +1,363 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
+import { DangerMeter } from "@/components/DangerMeter";
+import { InviteCard } from "@/components/InviteCard";
+import { SharePanel } from "@/components/SharePanel";
+import { getSessionId } from "@/lib/client-session";
+import { THEME_LIST, TONE_LIST, TRAP_LIST, TRAPS } from "@/lib/traps";
+import { cn } from "@/lib/utils";
+import type { Theme, Tone, TrapType } from "@/types";
+
+const NAME_MAX = 40;
+const MESSAGE_MAX = 180;
+
+type Step = "pick" | "customize" | "share";
+
+interface CreatedTrap {
+  trapId: string;
+  url: string;
+  shareText: string;
+}
+
+export function TrapCreator() {
+  const params = useSearchParams();
+  const prefillType = params.get("type") as TrapType | null;
+  const isRevenge = params.get("revenge") === "1";
+
+  const [step, setStep] = useState<Step>(
+    prefillType && TRAPS[prefillType] ? "customize" : "pick"
+  );
+  const [trapType, setTrapType] = useState<TrapType>(
+    prefillType && TRAPS[prefillType] ? prefillType : "anchor"
+  );
+  const [creatorName, setCreatorName] = useState(params.get("me") ?? "");
+  const [friendName, setFriendName] = useState(params.get("vs") ?? "");
+  const [tone, setTone] = useState<Tone>(isRevenge ? "spicy" : "spicy");
+  const [theme, setTheme] = useState<Theme>("clean-lab");
+  const [customMessage, setCustomMessage] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const [created, setCreated] = useState<CreatedTrap | null>(null);
+
+  const template = TRAPS[trapType];
+
+  const utm = useMemo(() => {
+    const u: Record<string, string> = {};
+    for (const k of ["source", "medium", "campaign"] as const) {
+      const v = params.get(`utm_${k}`);
+      if (v) u[k] = v.slice(0, 64);
+    }
+    return u;
+  }, [params]);
+
+  async function create() {
+    if (creating) return;
+    setCreating(true);
+    setError("");
+    try {
+      const res = await fetch("/api/traps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          creatorName,
+          friendName,
+          trapType,
+          tone,
+          theme,
+          customMessage,
+          creatorSessionId: getSessionId(),
+          source: isRevenge ? "revenge" : "direct",
+          utm,
+        }),
+      });
+      const data = (await res.json()) as CreatedTrap & { error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Trap creation failed.");
+      setCreated(data);
+      setStep("share");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Trap creation failed.");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-xl px-4 py-8 sm:py-12">
+      {isRevenge && step !== "share" && (
+        <div className="mb-6 rounded-xl border border-punch/40 bg-punch/10 px-4 py-3 text-sm text-frost">
+          🔥 <span className="font-semibold">Revenge mode.</span> They trapped
+          you. Statistics demand a response.
+        </div>
+      )}
+
+      <AnimatePresence mode="wait">
+        {step === "pick" && (
+          <motion.div
+            key="pick"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <h1 className="text-3xl font-bold tracking-tight">Choose your trap</h1>
+            <p className="mt-2 text-fog">
+              Eight lab-grade brain traps. Pick the one your friend deserves.
+            </p>
+            <div className="mt-6 grid gap-3">
+              {TRAP_LIST.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setTrapType(t.id);
+                    setStep("customize");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="glass group flex items-start gap-4 p-5 text-left transition-all hover:border-teal/50 hover:bg-white/[0.07]"
+                >
+                  <span className="text-3xl" aria-hidden="true">
+                    {t.emoji}
+                  </span>
+                  <span className="flex-1">
+                    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="font-bold">{t.labName}</span>
+                      <DangerMeter level={t.difficulty} />
+                    </span>
+                    <span className="mt-1 block text-sm leading-snug text-fog">
+                      {t.shortDescription}
+                    </span>
+                    <span className="mt-1.5 block font-mono text-[11px] uppercase tracking-widest text-fog/60">
+                      disguised as “{t.publicTitle}” · ~{t.estimatedTimeSeconds}s
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {step === "customize" && (
+          <motion.div
+            key="customize"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <button
+              type="button"
+              onClick={() => setStep("pick")}
+              className="mb-4 inline-flex items-center gap-1.5 text-sm text-fog hover:text-frost"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> All traps
+            </button>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {template.emoji} {template.labName}
+            </h1>
+            <p className="mt-1 text-fog">{template.shortDescription}</p>
+
+            <div className="mt-6 space-y-5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="creator" className="label">
+                    Your name
+                  </label>
+                  <input
+                    id="creator"
+                    className="input"
+                    placeholder="Dr. You"
+                    maxLength={NAME_MAX}
+                    value={creatorName}
+                    onChange={(e) => setCreatorName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="friend" className="label">
+                    Their name
+                  </label>
+                  <input
+                    id="friend"
+                    className="input"
+                    placeholder="The victim"
+                    maxLength={NAME_MAX}
+                    value={friendName}
+                    onChange={(e) => setFriendName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="taunt" className="label">
+                  Custom taunt <span className="text-fog/60">(optional)</span>
+                  <span className="float-right tabular-nums">
+                    {customMessage.length}/{MESSAGE_MAX}
+                  </span>
+                </label>
+                <textarea
+                  id="taunt"
+                  className="input min-h-20 resize-y"
+                  placeholder={`e.g. "You said you're immune to this stuff. Prove it."`}
+                  maxLength={MESSAGE_MAX}
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                />
+              </div>
+
+              <fieldset>
+                <legend className="label">Tone</legend>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {TONE_LIST.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={tone === t.id}
+                      onClick={() => setTone(t.id)}
+                      className={cn(
+                        "rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all",
+                        tone === t.id
+                          ? "border-teal/70 bg-teal/10 text-teal"
+                          : "border-white/12 bg-white/[0.04] text-fog hover:text-frost"
+                      )}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-xs text-fog">{TONE_LIST.find((t) => t.id === tone)?.blurb}</p>
+              </fieldset>
+
+              <fieldset>
+                <legend className="label">Card style</legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {THEME_LIST.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={theme === t.id}
+                      onClick={() => setTheme(t.id)}
+                      className={cn(
+                        "rounded-xl border px-2 py-2.5 text-xs font-semibold transition-all",
+                        theme === t.id
+                          ? "border-teal/70 bg-teal/10 text-frost"
+                          : "border-white/12 bg-white/[0.04] text-fog hover:text-frost"
+                      )}
+                    >
+                      <span className="block text-lg">{t.emoji}</span>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div>
+                <span className="label">What they'll see</span>
+                <InviteCard
+                  creatorName={creatorName}
+                  friendName={friendName}
+                  trapType={trapType}
+                  tone={tone}
+                  theme={theme}
+                  customMessage={customMessage}
+                />
+              </div>
+
+              {error && (
+                <p className="rounded-xl border border-punch/40 bg-punch/10 px-4 py-3 text-sm text-frost" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={create}
+                disabled={creating}
+                className="btn-primary w-full text-lg"
+              >
+                {creating ? "Arming…" : "⚡ Arm this trap"}
+              </button>
+              <p className="text-center font-mono text-xs text-fog/70">
+                the science stays intact — only the flavor is yours
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {step === "share" && created && (
+          <motion.div
+            key="share"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 18 }}
+          >
+            <div className="text-center">
+              <div className="chip mx-auto">✅ trap armed · awaiting subject</div>
+              <h1 className="mt-4 text-3xl font-bold tracking-tight">
+                Bait deployed.
+              </h1>
+              <p className="mt-2 text-fog">
+                Send this link to {friendName || "your target"}. Then act
+                natural.
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <InviteCard
+                creatorName={creatorName}
+                friendName={friendName}
+                trapType={trapType}
+                tone={tone}
+                theme={theme}
+                customMessage={customMessage}
+              />
+            </div>
+
+            <div className="glass mt-4 p-4">
+              <p className="break-all rounded-lg bg-ink/60 px-3 py-2.5 font-mono text-sm text-teal">
+                {created.url}
+              </p>
+              <div className="mt-3">
+                <SharePanel
+                  url={created.url}
+                  text={created.shareText}
+                  copyTextLabel="Copy taunt text"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2.5">
+              <a
+                href={created.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
+              >
+                Preview what they'll see ↗
+              </a>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => {
+                  setCreated(null);
+                  setStep("pick");
+                  setCustomMessage("");
+                  window.scrollTo({ top: 0 });
+                }}
+              >
+                Arm another trap
+              </button>
+              <Link href="/stats" className="btn-ghost">
+                Watch the stats roll in
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
