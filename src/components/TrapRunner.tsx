@@ -269,24 +269,6 @@ function LockIn({ disabled, onClick, label = "Lock it in" }: { disabled: boolean
 
 /* ---------- 1. Anchor ---------- */
 
-function JarSvg() {
-  // A cute lab jar of jellybeans; decorative only.
-  const beans = [
-    [30, 78, "#18D4D0"], [44, 84, "#F72585"], [58, 79, "#8E4DFF"], [70, 85, "#18D4D0"],
-    [36, 68, "#8E4DFF"], [52, 70, "#F8FAFC"], [66, 66, "#F72585"], [28, 58, "#F72585"],
-    [44, 58, "#18D4D0"], [60, 55, "#8E4DFF"], [72, 58, "#F8FAFC"], [38, 46, "#F72585"],
-    [54, 44, "#18D4D0"], [68, 46, "#8E4DFF"],
-  ] as const;
-  return (
-    <svg viewBox="0 0 100 100" className="mx-auto h-36 w-36" aria-hidden="true">
-      <path d="M30 12h40M34 12v10c-8 6-14 14-14 26v30a14 14 0 0 0 14 14h32a14 14 0 0 0 14-14V48c0-12-6-20-14-26V12" fill="rgba(248,250,252,0.05)" stroke="rgba(248,250,252,0.4)" strokeWidth="2.5" strokeLinecap="round" />
-      {beans.map(([x, y, c], i) => (
-        <ellipse key={i} cx={x} cy={y} rx="6" ry="4.2" fill={c} opacity="0.9" transform={`rotate(${(i * 37) % 60 - 30} ${x} ${y})`} />
-      ))}
-    </svg>
-  );
-}
-
 function AnchorChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
   // Variant is assigned when the challenge mounts (post-interaction, so no hydration issues).
   const [variant] = useState<"high" | "low">(() => (Math.random() < 0.5 ? "high" : "low"));
@@ -305,10 +287,11 @@ function AnchorChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
           {anchor.toLocaleString()}
         </span>
       </div>
-      <JarSvg />
-      <p className="mt-2 text-center text-sm text-fog">{ANCHOR_CHALLENGE.jarDescription}</p>
+      <p className="mt-1 text-center text-[15px] leading-relaxed text-fog">
+        {ANCHOR_CHALLENGE.jarDescription}
+      </p>
       <h2 className="mt-5 text-center text-xl font-bold">
-        How many jellybeans are in the jar?
+        {ANCHOR_CHALLENGE.question}
       </h2>
       <label className="sr-only" htmlFor="estimate">
         Your estimate

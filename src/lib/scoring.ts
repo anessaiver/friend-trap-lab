@@ -36,7 +36,7 @@ export function scoreAttempt(answer: AnswerPayload): ScoreOutcome {
       const anchor = ANCHOR_CHALLENGE.anchors[variant];
       const jar = ANCHOR_CHALLENGE.labCount;
       const detail = (verdict: string) =>
-        `You saw “${anchor.toLocaleString()}” and guessed ${estimate.toLocaleString()}. The jar holds ${jar}. ${verdict}`;
+        `You saw “${anchor.toLocaleString()}” and guessed ${estimate.toLocaleString()}. A one-liter jar holds about ${jar} jellybeans. ${verdict}`;
       if (variant === "high") {
         if (estimate >= 2000)
           return outcome("beautiful-disaster", detail("You didn't drift toward the anchor — you moved in with it."), { frameVariant: "high" });

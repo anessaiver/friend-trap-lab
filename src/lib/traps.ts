@@ -46,7 +46,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     shortDescription:
       "A giant useless number quietly leans on their estimate. They'll swear it didn't.",
     preRevealFrame: "One estimate. Ten seconds. Don't overthink it.",
-    challengeText: "How many jellybeans are in the lab jar?",
+    challengeText: "How many jellybeans fit in the lab's one-liter jar?",
     answerType: "number",
     difficulty: 2,
     estimatedTimeSeconds: 20,
@@ -397,7 +397,9 @@ export function getTrapOfTheDay(): TrapTemplate {
 /* ------------------------------------------------------------------ */
 
 export const ANCHOR_CHALLENGE = {
-  jarDescription: "Standard lab jar. One liter. Regulation jellybeans.",
+  jarDescription:
+    "The lab keeps a standard one-liter jar, filled to the brim with regular jellybeans.",
+  question: "How many jellybeans fit in the jar?",
   labCount: 437,
   anchors: { high: 8742, low: 141 },
 } as const;
