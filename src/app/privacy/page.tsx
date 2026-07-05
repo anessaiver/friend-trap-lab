@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LabIcon } from "@/components/LabIcon";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <div className="chip">🔏 plain english</div>
+      <div className="chip">
+        <LabIcon name="lock" className="h-3.5 w-3.5 text-teal" />
+        plain english
+      </div>
       <h1 className="mt-3 text-4xl font-bold tracking-tight">Privacy</h1>
       <p className="mt-3 text-fog">
         This is a playful game, so here's the deal in actual sentences instead

@@ -1,3 +1,4 @@
+import type { IconName } from "@/lib/icons";
 import type { ResultType, Theme, Tone, TrapType } from "@/types";
 
 /* ------------------------------------------------------------------ */
@@ -13,7 +14,7 @@ export interface TrapTemplate {
   id: TrapType;
   labName: string; // internal codename, revealed after the answer
   publicTitle: string; // what the friend sees before answering
-  emoji: string;
+  icon: IconName;
   shortDescription: string; // creator-facing menu copy (may hint at the mischief)
   preRevealFrame: string; // friend-facing framing, must not spoil the principle
   challengeText: string; // one-line brief shown on the challenge screen
@@ -41,7 +42,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "anchor",
     labName: "The Anchor Drop",
     publicTitle: "The 10-Second Estimate Test",
-    emoji: "⚓",
+    icon: "anchor",
     shortDescription:
       "A giant useless number quietly leans on their estimate. They'll swear it didn't.",
     preRevealFrame: "One estimate. Ten seconds. Don't overthink it.",
@@ -86,7 +87,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "frameflip",
     labName: "The Frame Flip",
     publicTitle: "The Emergency Decision Test",
-    emoji: "🔁",
+    icon: "exchange",
     shortDescription:
       "Two emergencies, same math, different outfits. Watch their answers disagree with each other.",
     preRevealFrame: "Two rapid-fire lab emergencies. Trust your gut.",
@@ -129,7 +130,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "baserate",
     labName: "The Base Rate Goblin",
     publicTitle: "The Detective Test",
-    emoji: "🕵️",
+    icon: "detective",
     shortDescription:
       "One dramatic clue vs one boring number. The boring number is armed.",
     preRevealFrame: "A quick lab whodunit. Science demands answers.",
@@ -172,7 +173,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "pattern",
     labName: "The Pattern Gremlin",
     publicTitle: "The Pattern IQ Test",
-    emoji: "🔢",
+    icon: "binary",
     shortDescription:
       "They'll hunt for proof they're right. The rule eats people who only confirm.",
     preRevealFrame: "Crack the lock's number rule. Test three codes, then call it.",
@@ -216,7 +217,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "availability",
     labName: "The Availability Ambush",
     publicTitle: "The Danger Ranking Test",
-    emoji: "📺",
+    icon: "news",
     shortDescription:
       "Three 'which is deadlier' calls. Their newsfeed answers before they do.",
     preRevealFrame: "Three quick calls. Which one ends more lives in a typical year?",
@@ -258,7 +259,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "sunkcost",
     labName: "The Sunk Cost Swamp",
     publicTitle: "The Project Rescue Test",
-    emoji: "🕳️",
+    icon: "quicksand",
     shortDescription:
       "18 months and $900K of regret, served on a silver platter. See if they keep paying for it.",
     preRevealFrame: "You're the lab director. One budget call. Go.",
@@ -300,7 +301,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "decoy",
     labName: "The Decoy Duck",
     publicTitle: "The Menu Genius Test",
-    emoji: "🦆",
+    icon: "duck",
     shortDescription:
       "Three popcorn sizes. One exists only to whisper at their wallet.",
     preRevealFrame: "Movie night. Pick your popcorn like a genius.",
@@ -343,7 +344,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     id: "confidence",
     labName: "The Confidence Cannon",
     publicTitle: "The Two-Question Genius Test",
-    emoji: "📣",
+    icon: "speakerphone",
     shortDescription:
       "One trivia question, one confidence slider. The slider does the damage.",
     preRevealFrame: "One question. Then say how sure you are. That's the whole test.",
@@ -450,22 +451,34 @@ export const AVAILABILITY_CHALLENGE = {
   question: "Which ends more human lives in a typical US year?",
   rounds: [
     {
-      options: ["Tornadoes 🌪️", "Asthma 🫁"],
+      options: [
+        { label: "Tornadoes", icon: "tornado" },
+        { label: "Asthma", icon: "lungs" },
+      ],
       correct: 1,
       note: "Asthma: ~3,500+ US deaths a year (CDC). Tornadoes: well under 100 (NOAA).",
     },
     {
-      options: ["Shark attacks 🦈", "Deer on the road 🦌"],
+      options: [
+        { label: "Shark attacks", icon: "sharkFin" },
+        { label: "Deer on the road", icon: "deer" },
+      ],
       correct: 1,
       note: "Deer–vehicle collisions: ~150–200 US deaths a year. Sharks: about one.",
     },
     {
-      options: ["Lightning ⚡", "Bee & wasp stings 🐝"],
+      options: [
+        { label: "Lightning", icon: "bolt" },
+        { label: "Bee & wasp stings", icon: "bee" },
+      ],
       correct: 1,
       note: "Stings: ~70 US deaths a year (CDC). Lightning: ~20 (NOAA).",
     },
   ],
-} as const;
+} as const satisfies {
+  question: string;
+  rounds: readonly { options: readonly { label: string; icon: IconName }[]; correct: number; note: string }[];
+};
 
 export const SUNKCOST_CHALLENGE = {
   story:
@@ -555,7 +568,7 @@ export const TONE_LIST = Object.values(TONES);
 export interface ThemeConfig {
   id: Theme;
   label: string;
-  emoji: string;
+  icon: IconName;
   /** Tailwind classes for the invite card surface */
   cardClass: string;
   /** Accent text class */
@@ -568,7 +581,7 @@ export const THEMES: Record<Theme, ThemeConfig> = {
   "clean-lab": {
     id: "clean-lab",
     label: "Clean Lab",
-    emoji: "🧪",
+    icon: "flask",
     cardClass:
       "border-teal/40 bg-gradient-to-br from-teal/10 via-transparent to-grape/10 shadow-[0_0_40px_-12px_rgba(24,212,208,0.45)]",
     accentClass: "text-teal",
@@ -577,7 +590,7 @@ export const THEMES: Record<Theme, ThemeConfig> = {
   "neon-trap": {
     id: "neon-trap",
     label: "Neon Trap",
-    emoji: "🪤",
+    icon: "trap",
     cardClass:
       "border-punch/50 bg-gradient-to-br from-punch/15 via-transparent to-grape/10 shadow-[0_0_40px_-10px_rgba(247,37,133,0.5)]",
     accentClass: "text-punch",
@@ -586,7 +599,7 @@ export const THEMES: Record<Theme, ThemeConfig> = {
   "evidence-board": {
     id: "evidence-board",
     label: "Evidence Board",
-    emoji: "📌",
+    icon: "pin",
     cardClass:
       "border-dashed border-frost/30 bg-gradient-to-br from-frost/8 via-transparent to-teal/8",
     accentClass: "text-frost",
@@ -595,7 +608,7 @@ export const THEMES: Record<Theme, ThemeConfig> = {
   villain: {
     id: "villain",
     label: "Villain Monologue",
-    emoji: "🦹",
+    icon: "masksTheater",
     cardClass:
       "border-grape/50 bg-gradient-to-br from-grape/20 via-transparent to-ink shadow-[0_0_40px_-10px_rgba(142,77,255,0.5)]",
     accentClass: "text-grape",
@@ -604,7 +617,7 @@ export const THEMES: Record<Theme, ThemeConfig> = {
   "game-show": {
     id: "game-show",
     label: "Game Show",
-    emoji: "🎰",
+    icon: "slotMachine",
     cardClass:
       "border-teal/40 bg-gradient-to-r from-teal/15 via-grape/10 to-punch/15 shadow-[0_0_40px_-10px_rgba(142,77,255,0.4)]",
     accentClass: "text-teal",
@@ -613,7 +626,7 @@ export const THEMES: Record<Theme, ThemeConfig> = {
   emergency: {
     id: "emergency",
     label: "Emergency Button",
-    emoji: "🚨",
+    icon: "urgent",
     cardClass:
       "border-punch/60 bg-gradient-to-br from-punch/20 via-transparent to-punch/5 shadow-[0_0_40px_-10px_rgba(247,37,133,0.6)]",
     accentClass: "text-punch",
@@ -631,8 +644,9 @@ export interface ResultMeta {
   id: ResultType;
   title: string;
   vibe: string;
-  emoji: string;
-  grid: string; // wordle-style emoji summary
+  icon: IconName;
+  /** Plain-text label for the copied share signature (SVGs can't ride in text). */
+  signature: string;
   colorClass: string;
   borderClass: string;
   escaped: boolean;
@@ -643,8 +657,8 @@ export const RESULT_META: Record<ResultType, ResultMeta> = {
     id: "clean-escape",
     title: "CLEAN ESCAPE",
     vibe: "You escaped. Annoying, but impressive.",
-    emoji: "🔓",
-    grid: "🧠✅🔓",
+    icon: "escape",
+    signature: "CLEAN ESCAPE",
     colorClass: "text-teal",
     borderClass: "border-teal/50",
     escaped: true,
@@ -653,8 +667,8 @@ export const RESULT_META: Record<ResultType, ResultMeta> = {
     id: "suspicious-escape",
     title: "SUSPICIOUS ESCAPE",
     vibe: "Right answer. Shaky landing. The lab is watching.",
-    emoji: "🧐",
-    grid: "🧠✅😅",
+    icon: "suspicious",
+    signature: "SUSPICIOUS ESCAPE",
     colorClass: "text-frost",
     borderClass: "border-frost/40",
     escaped: true,
@@ -663,8 +677,8 @@ export const RESULT_META: Record<ResultType, ResultMeta> = {
     id: "lab-incident",
     title: "LAB INCIDENT",
     vibe: "You got trapped. Beautifully. Cinematically.",
-    emoji: "🪤",
-    grid: "🧠💥🪤",
+    icon: "trap",
+    signature: "LAB INCIDENT",
     colorClass: "text-punch",
     borderClass: "border-punch/50",
     escaped: false,
@@ -673,8 +687,8 @@ export const RESULT_META: Record<ResultType, ResultMeta> = {
     id: "beautiful-disaster",
     title: "BEAUTIFUL DISASTER",
     vibe: "A museum-quality mistake. Frame it.",
-    emoji: "🎆",
-    grid: "🧠🎆🪤",
+    icon: "confetti",
+    signature: "BEAUTIFUL DISASTER",
     colorClass: "text-punch",
     borderClass: "border-punch/60",
     escaped: false,
@@ -683,8 +697,8 @@ export const RESULT_META: Record<ResultType, ResultMeta> = {
     id: "double-agent",
     title: "DOUBLE AGENT",
     vibe: "You dodged our trap and invented your own. Respect?",
-    emoji: "🕶️",
-    grid: "🧠🕶️🌀",
+    icon: "spy",
+    signature: "DOUBLE AGENT",
     colorClass: "text-grape",
     borderClass: "border-grape/50",
     escaped: true,
@@ -693,8 +707,8 @@ export const RESULT_META: Record<ResultType, ResultMeta> = {
     id: "tiny-genius",
     title: "TINY GENIUS MOMENT",
     vibe: "Escaped AND calibrated. Genuinely upsetting.",
-    emoji: "🏆",
-    grid: "🧠🎯🏆",
+    icon: "trophy",
+    signature: "ANNOYINGLY COMPETENT",
     colorClass: "text-teal",
     borderClass: "border-teal/60",
     escaped: true,

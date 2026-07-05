@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { getTrap } from "@/lib/stats";
 import { TRAPS, THEMES } from "@/lib/traps";
 import { demoTrapTypeFromId, isDemoTrapId } from "@/lib/demo";
-import { OG_COLORS, OG_SIZE, OgBadge, OgFooter, OgFrame } from "@/lib/og-helpers";
+import { OG_COLORS, OG_SIZE, OgBadge, OgFooter, OgFrame, OgIcon } from "@/lib/og-helpers";
 import type { TrapRecord } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -66,13 +66,20 @@ export async function GET(req: NextRequest) {
             <div
               style={{
                 display: "flex",
+                alignItems: "center",
+                gap: "12px",
                 padding: "10px 24px",
                 borderRadius: "999px",
                 border: `2px solid ${theme.ogAccent[0]}`,
                 color: theme.ogAccent[0],
               }}
             >
-              {template ? `${template.emoji} ${template.publicTitle}` : "🧪 A tiny brain trap"}
+              <OgIcon
+                name={template ? template.icon : "flask"}
+                size={34}
+                color={theme.ogAccent[0]}
+              />
+              {template ? template.publicTitle : "A tiny brain trap"}
             </div>
             <div style={{ display: "flex" }}>
               Can {friend} escape?

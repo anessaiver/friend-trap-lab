@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmailCTA } from "@/components/EmailCTA";
+import { LabIcon } from "@/components/LabIcon";
 import { hasRedisConfig } from "@/lib/env";
 import { getPublicStats } from "@/lib/stats";
 import { getTrapOfTheDay, TRAPS } from "@/lib/traps";
@@ -27,7 +28,10 @@ export default async function StatsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <div className="chip">📊 anonymous · aggregate · live</div>
+      <div className="chip">
+        <LabIcon name="stats" className="h-3.5 w-3.5 text-teal" />
+        anonymous · aggregate · live
+      </div>
       <h1 className="mt-3 text-4xl font-bold tracking-tight">Lab stats</h1>
       <p className="mt-2 text-fog">
         Every number below is real, counted from actual trap attempts. No
@@ -88,8 +92,15 @@ export default async function StatsPage() {
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-fog">
                 Median vibe today
               </div>
-              <div className="mt-1 text-2xl font-bold">
-                {stats.todayAttempts > 0 ? "🧠💥" : "🧪"}
+              <div className="mt-1 flex items-center gap-1.5">
+                {stats.todayAttempts > 0 ? (
+                  <>
+                    <LabIcon name="brain" className="h-6 w-6 text-fog" />
+                    <LabIcon name="warning" className="h-6 w-6 text-punch" />
+                  </>
+                ) : (
+                  <LabIcon name="flask" className="h-6 w-6 text-teal" />
+                )}
               </div>
               <p className="text-xs text-fog">
                 {stats.todayTraps} traps · {stats.todayAttempts} attempts today
@@ -98,9 +109,10 @@ export default async function StatsPage() {
           </div>
 
           {stats.smallSample && (
-            <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-fog">
-              ⚠️ The sample size is currently tiny. A statistician is watching
-              us with one eyebrow raised. Percentages unlock as subjects
+            <p className="mt-4 flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-fog">
+              <LabIcon name="warning" className="mt-0.5 h-4 w-4 shrink-0 text-punch" />
+              The sample size is currently tiny. A statistician is watching us
+              with one eyebrow raised. Percentages unlock as subjects
               accumulate.
             </p>
           )}
@@ -108,11 +120,15 @@ export default async function StatsPage() {
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {stats.mostDangerous && (
               <div className="glass flex-1 border-punch/30 p-5">
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-punch">
-                  ☠️ most dangerous trap
+                <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-punch">
+                  <LabIcon name="skull" className="h-3.5 w-3.5" />
+                  most dangerous trap
                 </div>
-                <div className="mt-1 font-bold">
-                  {TRAPS[stats.mostDangerous.trapType].emoji}{" "}
+                <div className="mt-1 flex items-center gap-2 font-bold">
+                  <LabIcon
+                    name={TRAPS[stats.mostDangerous.trapType].icon}
+                    className="h-5 w-5 text-punch"
+                  />
                   {TRAPS[stats.mostDangerous.trapType].labName}
                 </div>
                 <p className="text-sm text-fog">
@@ -125,11 +141,15 @@ export default async function StatsPage() {
             )}
             {stats.mostEscaped && (
               <div className="glass flex-1 border-teal/30 p-5">
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal">
-                  🔓 most escaped trap
+                <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-teal">
+                  <LabIcon name="escape" className="h-3.5 w-3.5" />
+                  most escaped trap
                 </div>
-                <div className="mt-1 font-bold">
-                  {TRAPS[stats.mostEscaped.trapType].emoji}{" "}
+                <div className="mt-1 flex items-center gap-2 font-bold">
+                  <LabIcon
+                    name={TRAPS[stats.mostEscaped.trapType].icon}
+                    className="h-5 w-5 text-teal"
+                  />
                   {TRAPS[stats.mostEscaped.trapType].labName}
                 </div>
                 <p className="text-sm text-fog">
@@ -156,7 +176,10 @@ export default async function StatsPage() {
                 {stats.byType.map((t) => (
                   <tr key={t.trapType} className="border-b border-white/5 last:border-0">
                     <td className="px-4 py-3">
-                      {TRAPS[t.trapType].emoji} {TRAPS[t.trapType].labName}
+                      <span className="flex items-center gap-2">
+                        <LabIcon name={TRAPS[t.trapType].icon} className="h-4 w-4 text-teal" />
+                        {TRAPS[t.trapType].labName}
+                      </span>
                     </td>
                     <td className="px-4 py-3 tabular-nums">{t.attempts}</td>
                     <td className="px-4 py-3 tabular-nums">{t.trapped}</td>
@@ -184,8 +207,9 @@ export default async function StatsPage() {
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-gradient-to-r from-teal/10 via-grape/10 to-punch/10 p-6">
         <div>
-          <div className="font-bold">
-            Today's featured menace: {featured.emoji} {featured.labName}
+          <div className="flex items-center gap-2 font-bold">
+            <LabIcon name={featured.icon} className="h-5 w-5 text-punch" />
+            Today's featured menace: {featured.labName}
           </div>
           <p className="text-sm text-fog">Add a data point. Trap somebody.</p>
         </div>

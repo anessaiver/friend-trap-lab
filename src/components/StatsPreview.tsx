@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { LabIcon } from "@/components/LabIcon";
 import { TRAPS } from "@/lib/traps";
+import type { IconName } from "@/lib/icons";
 import type { PublicStats } from "@/types";
 
 export function StatsPreview() {
@@ -18,7 +20,7 @@ export function StatsPreview() {
 
   if (failed) return null;
 
-  const items = [
+  const items: Array<{ label: string; value?: string; icon?: IconName; detail?: string }> = [
     { label: "Traps armed", value: stats ? stats.trapsCreated.toLocaleString() : "···" },
     { label: "Lab subjects", value: stats ? stats.attempts.toLocaleString() : "···" },
     {
@@ -31,9 +33,7 @@ export function StatsPreview() {
     },
     {
       label: "Most dangerous",
-      value: stats?.mostDangerous
-        ? TRAPS[stats.mostDangerous.trapType].emoji
-        : "🔬",
+      icon: stats?.mostDangerous ? TRAPS[stats.mostDangerous.trapType].icon : "microscope",
       detail: stats?.mostDangerous
         ? TRAPS[stats.mostDangerous.trapType].labName
         : "collecting data…",
@@ -48,13 +48,15 @@ export function StatsPreview() {
     >
       {items.map((item) => (
         <div key={item.label}>
-          <div className="text-2xl font-bold tabular-nums">{item.value}</div>
+          {item.icon ? (
+            <LabIcon name={item.icon} className="h-7 w-7 text-punch" />
+          ) : (
+            <div className="text-2xl font-bold tabular-nums">{item.value}</div>
+          )}
           <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-fog">
             {item.label}
           </div>
-          {"detail" in item && item.detail && (
-            <div className="text-xs text-fog/80">{item.detail}</div>
-          )}
+          {item.detail && <div className="text-xs text-fog/80">{item.detail}</div>}
         </div>
       ))}
     </Link>

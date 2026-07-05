@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { LabIcon } from "@/components/LabIcon";
 
 export default function NotFound() {
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center px-4 py-28 text-center">
-      <div className="font-mono text-sm tracking-[0.3em] text-punch">ERROR 404</div>
+      <LabIcon name="ghost" className="h-12 w-12 text-grape" />
+      <div className="mt-4 font-mono text-sm tracking-[0.3em] text-punch">ERROR 404</div>
       <h1 className="mt-4 text-4xl font-bold tracking-tight">
         This page is a false memory.
       </h1>

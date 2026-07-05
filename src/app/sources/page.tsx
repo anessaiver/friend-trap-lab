@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LabIcon } from "@/components/LabIcon";
 import { TRAP_LIST } from "@/lib/traps";
 
 export const metadata: Metadata = {
@@ -35,7 +36,10 @@ const EXTRA_SOURCES = [
 export default function SourcesPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <div className="chip">📚 receipts</div>
+      <div className="chip">
+        <LabIcon name="clipboard" className="h-3.5 w-3.5 text-teal" />
+        receipts
+      </div>
       <h1 className="mt-3 text-4xl font-bold tracking-tight">Sources</h1>
       <p className="mt-3 text-fog">
         “Cite or it didn't happen” is the house rule. Every trap teaches a real,
@@ -53,8 +57,9 @@ export default function SourcesPage() {
       <ul className="mt-4 space-y-4">
         {TRAP_LIST.map((t) => (
           <li key={t.id} className="glass p-5">
-            <div className="flex items-center gap-2 font-bold">
-              <span aria-hidden="true">{t.emoji}</span> {t.labName}
+            <div className="flex flex-wrap items-center gap-2 font-bold">
+              <LabIcon name={t.icon} className="h-5 w-5 text-teal" />
+              {t.labName}
               <span className="chip !text-[10px]">{t.principleName}</span>
             </div>
             <p className="mt-2 font-mono text-xs leading-relaxed text-fog">

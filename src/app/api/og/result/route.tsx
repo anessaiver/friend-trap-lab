@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { getAttempt } from "@/lib/stats";
 import { RESULT_META, THEMES, TRAPS } from "@/lib/traps";
-import { OG_COLORS, OG_SIZE, OgBadge, OgFooter, OgFrame } from "@/lib/og-helpers";
+import { OG_COLORS, OG_SIZE, OgBadge, OgFooter, OgFrame, OgSignature } from "@/lib/og-helpers";
 import type { AttemptRecord } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
           >
             {friend} {escaped ? "escaped" : "walked into"} {template.labName} — armed by {creator}.
           </div>
-          <div style={{ display: "flex", fontSize: "44px" }}>{meta.grid} {template.emoji}</div>
+          <OgSignature trapIcon={template.icon} escaped={escaped} />
         </div>
         <OgFooter />
       </OgFrame>

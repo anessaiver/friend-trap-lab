@@ -32,6 +32,9 @@ form on the site.
 
 - [Next.js 15](https://nextjs.org) (App Router) + TypeScript
 - [Tailwind CSS v4](https://tailwindcss.com) + Framer Motion
+- [Iconify](https://icon-sets.iconify.design/) icons (Tabler / MDI / Game Icons),
+  baked to SSR-safe SVG data by `scripts/gen-icons.mjs` so the same icons render
+  in the UI and the OG images with zero runtime fetching
 - [Upstash Redis](https://upstash.com) for anonymous trap/attempt storage
 - [Beehiiv](https://beehiiv.com) V2 API for newsletter signup
 - [`@vercel/og`](https://vercel.com/docs/og-image-generation) for dynamic share cards

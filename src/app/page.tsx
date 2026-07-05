@@ -2,27 +2,29 @@ import Link from "next/link";
 import { DangerMeter } from "@/components/DangerMeter";
 import { EmailCTA } from "@/components/EmailCTA";
 import { InviteCard } from "@/components/InviteCard";
+import { LabIcon } from "@/components/LabIcon";
 import { StatsPreview } from "@/components/StatsPreview";
 import { getTrapOfTheDay, TRAP_LIST } from "@/lib/traps";
+import type { IconName } from "@/lib/icons";
 
-const STEPS = [
+const STEPS: Array<{ icon: IconName; title: string; text: string }> = [
   {
-    emoji: "🪤",
+    icon: "trap",
     title: "Arm it",
     text: "Pick a science-backed brain trap, add your name, their name, and a taunt.",
   },
   {
-    emoji: "📨",
+    icon: "send",
     title: "Send it",
     text: "One link. They tap it, take a 20-second challenge, no signup.",
   },
   {
-    emoji: "🔬",
+    icon: "microscope",
     title: "The reveal",
     text: "Trapped or escaped — plus the real science, a citation, and a roast.",
   },
   {
-    emoji: "🔥",
+    icon: "flame",
     title: "The revenge",
     text: "They trap you back. Science wins either way.",
   },
@@ -36,7 +38,10 @@ export default function HomePage() {
       {/* Hero */}
       <section className="grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2">
         <div>
-          <div className="chip">🧪 a Distilled Science experiment</div>
+          <div className="chip">
+            <LabIcon name="flask" className="h-3.5 w-3.5 text-teal" />a
+            Distilled Science experiment
+          </div>
           <h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             Send your friend a{" "}
             <span className="bg-gradient-to-r from-teal via-grape to-punch bg-clip-text text-transparent">
@@ -51,7 +56,8 @@ export default function HomePage() {
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Link href="/make" className="btn-primary text-lg sm:flex-none">
-              🪤 Arm a trap
+              <LabIcon name="trap" className="h-5 w-5" />
+              Arm a trap
             </Link>
             <Link href="/t/demo" className="btn-ghost text-lg sm:flex-none">
               Try one on yourself
@@ -85,7 +91,9 @@ export default function HomePage() {
           {STEPS.map((s, i) => (
             <div key={s.title} className="glass p-5">
               <div className="flex items-center justify-between">
-                <span className="text-3xl">{s.emoji}</span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
+                  <LabIcon name={s.icon} className="h-5 w-5" />
+                </span>
                 <span className="font-mono text-xs text-fog/60">0{i + 1}</span>
               </div>
               <h3 className="mt-3 font-bold">{s.title}</h3>
@@ -102,7 +110,8 @@ export default function HomePage() {
             The trap menu
           </h2>
           <span className="chip">
-            ⭐ today's featured menace: {featured.emoji} {featured.labName}
+            <LabIcon name="star" className="h-3.5 w-3.5 text-punch" />
+            today's featured menace: {featured.labName}
           </span>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -112,8 +121,8 @@ export default function HomePage() {
               href={`/make?type=${t.id}`}
               className="glass group flex items-start gap-4 p-5 transition-all hover:border-teal/50 hover:bg-white/[0.07]"
             >
-              <span className="text-3xl" aria-hidden="true">
-                {t.emoji}
+              <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
+                <LabIcon name={t.icon} className="h-6 w-6" />
               </span>
               <span>
                 <span className="flex flex-wrap items-center gap-x-3 gap-y-1">

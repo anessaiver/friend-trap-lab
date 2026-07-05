@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { LabIcon } from "@/components/LabIcon";
 import { SharePanel } from "@/components/SharePanel";
 import { RESULT_META, TRAPS } from "@/lib/traps";
-import { emojiGrid, resultShareText } from "@/lib/share";
+import { resultShareText, resultSignatureText } from "@/lib/share";
 import { cn, percent } from "@/lib/utils";
+import type { IconName } from "@/lib/icons";
 import type { ResultType, TrapType } from "@/types";
 
 export interface ResultRevealProps {
@@ -23,6 +25,46 @@ export interface ResultRevealProps {
   } | null;
   shareUrl: string;
   isDemo: boolean;
+}
+
+/**
+ * The visual result signature — a tiny lab report stamp:
+ * brain → trap type → outcome → flask.
+ */
+function ResultSignature({
+  trapType,
+  escaped,
+}: {
+  trapType: TrapType;
+  escaped: boolean;
+}) {
+  const tiles: Array<{ name: IconName; className: string }> = [
+    { name: "brain", className: "text-fog border-white/15" },
+    { name: TRAPS[trapType].icon, className: "text-grape border-grape/40" },
+    escaped
+      ? { name: "check", className: "text-teal border-teal/40" }
+      : { name: "warning", className: "text-punch border-punch/40" },
+    { name: "flask", className: "text-teal border-teal/40" },
+  ];
+  return (
+    <span
+      className="inline-flex items-center gap-1.5"
+      role="img"
+      aria-label={`Lab result: brain ${escaped ? "escaped" : "trapped"}`}
+    >
+      {tiles.map((t, i) => (
+        <span
+          key={i}
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-lg border bg-ink/60",
+            t.className
+          )}
+        >
+          <LabIcon name={t.name} className="h-4.5 w-4.5" />
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export function ResultReveal(props: ResultRevealProps) {
@@ -67,8 +109,14 @@ export function ResultReveal(props: ResultRevealProps) {
           meta.borderClass
         )}
       >
-        <div className={cn("text-3xl font-black tracking-[0.08em] sm:text-4xl", meta.colorClass)}>
-          {meta.emoji} {meta.title}
+        <div
+          className={cn(
+            "flex items-center gap-3 text-3xl font-black tracking-[0.08em] sm:text-4xl",
+            meta.colorClass
+          )}
+        >
+          <LabIcon name={meta.icon} className="h-9 w-9 sm:h-10 sm:w-10" />
+          {meta.title}
         </div>
       </motion.div>
 
@@ -90,7 +138,10 @@ export function ResultReveal(props: ResultRevealProps) {
 
       {/* The science */}
       <motion.div {...stagger(2)} className="glass mt-4 p-6">
-        <div className="chip">🔬 what just happened</div>
+        <div className="chip">
+          <LabIcon name="microscope" className="h-3.5 w-3.5 text-teal" />
+          what just happened
+        </div>
         <h2 className="mt-3 text-xl font-bold">
           {template.principleName}
         </h2>
@@ -115,7 +166,10 @@ export function ResultReveal(props: ResultRevealProps) {
 
       {/* Trap danger stats */}
       <motion.div {...stagger(3)} className="glass mt-4 p-6">
-        <div className="chip">📊 this trap's record</div>
+        <div className="chip">
+          <LabIcon name="stats" className="h-3.5 w-3.5 text-grape" />
+          this trap's record
+        </div>
         {props.aggregate.attempts >= 5 ? (
           <>
             <p className="mt-3 text-[15px] text-frost">
@@ -155,12 +209,16 @@ export function ResultReveal(props: ResultRevealProps) {
 
       {/* Share */}
       <motion.div {...stagger(4)} className="glass mt-4 p-6">
-        <div className="flex items-center justify-between">
-          <div className="chip">📤 publish the evidence</div>
-          <span className="text-lg" aria-hidden="true">
-            {emojiGrid(props.resultType, props.trapType)}
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="chip">
+            <LabIcon name="share" className="h-3.5 w-3.5 text-teal" />
+            publish the evidence
+          </div>
+          <ResultSignature trapType={props.trapType} escaped={meta.escaped} />
         </div>
+        <p className="mt-3 rounded-lg bg-ink/60 px-3 py-2 font-mono text-[11px] tracking-wide text-fog">
+          {resultSignatureText(props.resultType, props.trapType)}
+        </p>
         <div className="mt-4">
           <SharePanel url={props.shareUrl} text={shareText} />
         </div>
@@ -175,7 +233,8 @@ export function ResultReveal(props: ResultRevealProps) {
           href={`/make?${revengeParams.toString()}`}
           className="btn-punch mt-3 w-full text-lg"
         >
-          🪤 {props.isDemo ? "Trap a real friend" : `Trap ${creator} back`}
+          <LabIcon name="trap" className="h-5 w-5" />
+          {props.isDemo ? "Trap a real friend" : `Trap ${creator} back`}
         </Link>
         <Link href="/make" className="btn-ghost mt-2.5 w-full">
           Or arm a different trap

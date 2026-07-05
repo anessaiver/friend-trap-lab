@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { LabIcon } from "@/components/LabIcon";
 import { TRAPS } from "@/lib/traps";
 import type { AdminStats } from "@/lib/stats";
 
@@ -210,7 +211,7 @@ export default function AdminPage() {
             {p.byType.map((t) => (
               <tr key={t.trapType} className="border-b border-white/5 last:border-0">
                 <td className="px-4 py-2.5">
-                  {TRAPS[t.trapType].emoji} {TRAPS[t.trapType].labName}
+                  <span className="flex items-center gap-2"><LabIcon name={TRAPS[t.trapType].icon} className="h-4 w-4 text-teal" />{TRAPS[t.trapType].labName}</span>
                 </td>
                 <td className="px-4 py-2.5 tabular-nums">{t.attempts}</td>
                 <td className="px-4 py-2.5 tabular-nums">{t.trapped}</td>
@@ -267,7 +268,7 @@ export default function AdminPage() {
                       </a>
                       {t.isTest && <span className="ml-1 text-punch">T</span>}
                     </td>
-                    <td className="px-3 py-2">{TRAPS[t.trapType].emoji}</td>
+                    <td className="px-3 py-2"><LabIcon name={TRAPS[t.trapType].icon} className="h-4 w-4 text-fog" /></td>
                     <td className="px-3 py-2">
                       {t.creatorName || "—"} → {t.friendName || "—"}
                     </td>
@@ -299,7 +300,7 @@ export default function AdminPage() {
                       </a>
                       {a.isTest && <span className="ml-1 text-punch">T</span>}
                     </td>
-                    <td className="px-3 py-2">{TRAPS[a.trapType].emoji}</td>
+                    <td className="px-3 py-2"><LabIcon name={TRAPS[a.trapType].icon} className="h-4 w-4 text-fog" /></td>
                     <td className="px-3 py-2">
                       <span className={a.isTrapped ? "text-punch" : "text-teal"}>{a.resultType}</span>
                     </td>

@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
 import { DangerMeter } from "@/components/DangerMeter";
 import { InviteCard } from "@/components/InviteCard";
+import { LabIcon } from "@/components/LabIcon";
 import { SharePanel } from "@/components/SharePanel";
 import { getSessionId } from "@/lib/client-session";
 import { THEME_LIST, TONE_LIST, TRAP_LIST, TRAPS } from "@/lib/traps";
@@ -90,9 +90,12 @@ export function TrapCreator() {
   return (
     <div className="mx-auto max-w-xl px-4 py-8 sm:py-12">
       {isRevenge && step !== "share" && (
-        <div className="mb-6 rounded-xl border border-punch/40 bg-punch/10 px-4 py-3 text-sm text-frost">
-          🔥 <span className="font-semibold">Revenge mode.</span> They trapped
-          you. Statistics demand a response.
+        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-punch/40 bg-punch/10 px-4 py-3 text-sm text-frost">
+          <LabIcon name="flame" className="h-5 w-5 shrink-0 text-punch" />
+          <span>
+            <span className="font-semibold">Revenge mode.</span> They trapped
+            you. Statistics demand a response.
+          </span>
         </div>
       )}
 
@@ -121,8 +124,8 @@ export function TrapCreator() {
                   }}
                   className="glass group flex items-start gap-4 p-5 text-left transition-all hover:border-teal/50 hover:bg-white/[0.07]"
                 >
-                  <span className="text-3xl" aria-hidden="true">
-                    {t.emoji}
+                  <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
+                    <LabIcon name={t.icon} className="h-6 w-6" />
                   </span>
                   <span className="flex-1">
                     <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -155,10 +158,11 @@ export function TrapCreator() {
               onClick={() => setStep("pick")}
               className="mb-4 inline-flex items-center gap-1.5 text-sm text-fog hover:text-frost"
             >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> All traps
+              <LabIcon name="arrowLeft" /> All traps
             </button>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {template.emoji} {template.labName}
+            <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
+              <LabIcon name={template.icon} className="h-8 w-8 text-teal" />
+              {template.labName}
             </h1>
             <p className="mt-1 text-fog">{template.shortDescription}</p>
 
@@ -242,13 +246,16 @@ export function TrapCreator() {
                       aria-pressed={theme === t.id}
                       onClick={() => setTheme(t.id)}
                       className={cn(
-                        "rounded-xl border px-2 py-2.5 text-xs font-semibold transition-all",
+                        "flex flex-col items-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-semibold transition-all",
                         theme === t.id
                           ? "border-teal/70 bg-teal/10 text-frost"
                           : "border-white/12 bg-white/[0.04] text-fog hover:text-frost"
                       )}
                     >
-                      <span className="block text-lg">{t.emoji}</span>
+                      <LabIcon
+                        name={t.icon}
+                        className={cn("h-5 w-5", theme === t.id ? "text-teal" : "text-fog")}
+                      />
                       {t.label}
                     </button>
                   ))}
@@ -279,7 +286,8 @@ export function TrapCreator() {
                 disabled={creating}
                 className="btn-primary w-full text-lg"
               >
-                {creating ? "Arming…" : "⚡ Arm this trap"}
+                <LabIcon name="bolt" className="h-5 w-5" />
+                {creating ? "Arming…" : "Arm this trap"}
               </button>
               <p className="text-center font-mono text-xs text-fog/70">
                 the science stays intact — only the flavor is yours
@@ -296,7 +304,10 @@ export function TrapCreator() {
             transition={{ type: "spring", stiffness: 200, damping: 18 }}
           >
             <div className="text-center">
-              <div className="chip mx-auto">✅ trap armed · awaiting subject</div>
+              <div className="chip mx-auto">
+                <LabIcon name="check" className="h-3.5 w-3.5 text-teal" />
+                trap armed · awaiting subject
+              </div>
               <h1 className="mt-4 text-3xl font-bold tracking-tight">
                 Bait deployed.
               </h1>
@@ -337,7 +348,8 @@ export function TrapCreator() {
                 rel="noopener noreferrer"
                 className="btn-ghost"
               >
-                Preview what they'll see ↗
+                Preview what they'll see
+                <LabIcon name="externalLink" />
               </a>
               <button
                 type="button"

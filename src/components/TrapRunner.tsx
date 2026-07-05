@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { InviteCard } from "@/components/InviteCard";
+import { LabIcon } from "@/components/LabIcon";
 import { getSessionId } from "@/lib/client-session";
 import {
   ANCHOR_CHALLENGE,
@@ -115,9 +116,13 @@ export function TrapRunner({ trap }: { trap: PublicTrap }) {
             transition={{ duration: 0.3 }}
           >
             <div className="mb-5 flex items-center justify-between">
-              <span className="chip">🔴 subject in the lab</span>
-              <span className="font-mono text-xs text-fog">
-                {template.emoji} {template.publicTitle}
+              <span className="chip">
+                <LabIcon name="radar" className="h-3.5 w-3.5 text-punch" />
+                subject in the lab
+              </span>
+              <span className="flex items-center gap-1.5 font-mono text-xs text-fog">
+                <LabIcon name={template.icon} className="h-3.5 w-3.5" />
+                {template.publicTitle}
               </span>
             </div>
             <Challenge trapType={trap.trapType} onSubmit={submit} />
@@ -133,7 +138,8 @@ export function TrapRunner({ trap }: { trap: PublicTrap }) {
             animate={{ opacity: 1 }}
             className="glass p-6 text-center"
           >
-            <p className="text-lg font-semibold">The lab jammed. 🔧</p>
+            <LabIcon name="tool" className="mx-auto h-8 w-8 text-punch" />
+            <p className="mt-3 text-lg font-semibold">The lab jammed.</p>
             <p className="mt-2 text-sm text-fog">{errorMsg}</p>
             <button
               className="btn-primary mt-5"
@@ -167,10 +173,9 @@ function SuspenseOverlay() {
       <motion.div
         animate={{ rotate: [0, -8, 8, -4, 4, 0] }}
         transition={{ duration: 1.1, repeat: Infinity }}
-        className="text-5xl"
         aria-hidden="true"
       >
-        🧪
+        <LabIcon name="flask" className="h-14 w-14 text-teal" />
       </motion.div>
       <div className="h-1.5 w-full max-w-64 overflow-hidden rounded-full bg-white/10">
         <div className="h-full w-1/3 animate-scan rounded-full bg-gradient-to-r from-teal via-grape to-punch" />
@@ -350,7 +355,10 @@ function FrameFlipChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
         transition={{ duration: 0.25 }}
         className="glass p-6"
       >
-        <div className="chip">{round}/2 · act fast</div>
+        <div className="chip">
+          <LabIcon name={round === 1 ? "snowflake" : "server"} className="h-3.5 w-3.5 text-teal" />
+          {round}/2 · act fast
+        </div>
         <h2 className="mt-3 text-xl font-bold">{q.title}</h2>
         <p className="mt-2 text-[15px] leading-relaxed text-fog">{q.story}</p>
         <div className="mt-5 flex flex-col gap-3">
@@ -370,15 +378,24 @@ function BaseRateChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
 
   return (
     <div className="glass p-6">
-      <div className="chip">🚨 incident report</div>
+      <div className="chip">
+        <LabIcon name="urgent" className="h-3.5 w-3.5 text-punch" />
+        incident report
+      </div>
       <p className="mt-3 text-[15px] leading-relaxed text-frost">{BASERATE_CHALLENGE.story}</p>
       <h2 className="mt-4 text-xl font-bold">{BASERATE_CHALLENGE.question}</h2>
       <div className="mt-4 flex flex-col gap-3">
         <OptionButton selected={pick === "flagged"} onClick={() => setPick("flagged")}>
-          🐭 {BASERATE_CHALLENGE.options.flagged}
+          <span className="flex items-center gap-2.5">
+            <LabIcon name="rodent" className="h-5 w-5 text-punch" />
+            {BASERATE_CHALLENGE.options.flagged}
+          </span>
         </OptionButton>
         <OptionButton selected={pick === "standard"} onClick={() => setPick("standard")}>
-          🐁 {BASERATE_CHALLENGE.options.standard}
+          <span className="flex items-center gap-2.5">
+            <LabIcon name="rodent" className="h-5 w-5 text-fog" />
+            {BASERATE_CHALLENGE.options.standard}
+          </span>
         </OptionButton>
       </div>
       <div className="mt-6">
@@ -427,7 +444,10 @@ function PatternChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
 
   return (
     <div className="glass p-6">
-      <div className="chip">🔐 the lab lock</div>
+      <div className="chip">
+        <LabIcon name="lock" className="h-3.5 w-3.5 text-grape" />
+        the lab lock
+      </div>
       <p className="mt-3 text-[15px] leading-relaxed text-fog">
         The lock follows a secret number rule. This code opens it:
       </p>
@@ -538,8 +558,11 @@ function AvailabilityChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
         <h2 className="mt-3 text-xl font-bold">{AVAILABILITY_CHALLENGE.question}</h2>
         <div className="mt-5 flex flex-col gap-3">
           {current.options.map((opt, i) => (
-            <OptionButton key={opt} onClick={() => pick(i)} className="text-lg">
-              {opt}
+            <OptionButton key={opt.label} onClick={() => pick(i)} className="text-lg">
+              <span className="flex items-center gap-3">
+                <LabIcon name={opt.icon} className="h-6 w-6 text-teal" />
+                {opt.label}
+              </span>
             </OptionButton>
           ))}
         </div>
@@ -557,7 +580,10 @@ function SunkCostChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
   const [choice, setChoice] = useState<"finish" | "stop" | "reprice" | null>(null);
   return (
     <div className="glass p-6">
-      <div className="chip">🗂️ director's desk</div>
+      <div className="chip">
+        <LabIcon name="briefcase" className="h-3.5 w-3.5 text-teal" />
+        director's desk
+      </div>
       <p className="mt-3 text-[15px] leading-relaxed text-frost">{SUNKCOST_CHALLENGE.story}</p>
       <h2 className="mt-4 text-xl font-bold">{SUNKCOST_CHALLENGE.question}</h2>
       <div className="mt-4 flex flex-col gap-3">
@@ -582,7 +608,10 @@ function DecoyChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
   const [choice, setChoice] = useState<"small" | "medium" | "large" | null>(null);
   return (
     <div className="glass p-6">
-      <div className="chip">🍿 concession stand</div>
+      <div className="chip">
+        <LabIcon name="popcorn" className="h-3.5 w-3.5 text-teal" />
+        concession stand
+      </div>
       <p className="mt-3 text-[15px] text-fog">{DECOY_CHALLENGE.intro}</p>
       <div className="mt-4 flex flex-col gap-3">
         {DECOY_CHALLENGE.options.map((o) => (
@@ -611,12 +640,21 @@ function ConfidenceChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
   const [confidence, setConfidence] = useState(75);
   return (
     <div className="glass p-6">
-      <div className="chip">🔭 question one of one</div>
+      <div className="chip">
+        <LabIcon name="telescope" className="h-3.5 w-3.5 text-grape" />
+        question one of one
+      </div>
       <h2 className="mt-3 text-xl font-bold">{CONFIDENCE_CHALLENGE.question}</h2>
       <div className="mt-4 flex flex-col gap-3">
         {CONFIDENCE_CHALLENGE.options.map((o) => (
           <OptionButton key={o.id} selected={pick === o.id} onClick={() => setPick(o.id)} className="text-lg">
-            {o.id === "jupiter" ? "🟠" : "🪐"} {o.label}
+            <span className="flex items-center gap-3">
+              <LabIcon
+                name="planet"
+                className={o.id === "jupiter" ? "h-6 w-6 text-punch" : "h-6 w-6 text-teal"}
+              />
+              {o.label}
+            </span>
           </OptionButton>
         ))}
       </div>

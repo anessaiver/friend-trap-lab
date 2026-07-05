@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LabIcon } from "@/components/LabIcon";
 
 interface EmailCTAProps {
   source: string;
@@ -41,7 +42,10 @@ export function EmailCTA({ source, compact = false, showTransparency = false }: 
     <section className="glass overflow-hidden p-6 sm:p-8" aria-label="Get the lab notes by email">
       {!compact && (
         <>
-          <div className="chip">📋 The honest bribe</div>
+          <div className="chip">
+            <LabIcon name="clipboard" className="h-3.5 w-3.5 text-teal" />
+            The honest bribe
+          </div>
           <h2 className="mt-3 text-2xl font-bold tracking-tight">
             Steal this entire experiment.
           </h2>

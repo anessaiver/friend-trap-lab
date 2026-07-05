@@ -2,9 +2,15 @@ import { RESULT_META, TRAPS } from "@/lib/traps";
 import { fillTemplate } from "@/lib/utils";
 import type { ResultType, TrapType } from "@/types";
 
-/** Wordle-style compact result summary for pasting anywhere. */
-export function emojiGrid(resultType: ResultType, trapType: TrapType): string {
-  return `${RESULT_META[resultType].grid} ${TRAPS[trapType].emoji}`;
+/**
+ * Plain-text result signature for copied/shared text. (The visual version —
+ * the Iconify "lab report stamp" — lives on the result page and OG images;
+ * plain text can't carry SVGs, so words do the work here.)
+ */
+export function resultSignatureText(resultType: ResultType, trapType: TrapType): string {
+  const meta = RESULT_META[resultType];
+  const trapName = TRAPS[trapType].labName.replace(/^The /, "").toUpperCase();
+  return `BRAIN: ${meta.escaped ? "ESCAPED" : "TRAPPED"} | TRAP: ${trapName} | LAB RESULT: ${meta.signature}`;
 }
 
 export function creatorShareText(friendName: string, trapType: TrapType, url: string): string {
@@ -22,8 +28,7 @@ export function resultShareText(opts: {
     ? TRAPS[opts.trapType].shareTextEscaped
     : TRAPS[opts.trapType].shareTextTrapped;
   const line = fillTemplate(template, { creator: opts.creatorName || "My friend" });
-  const grid = emojiGrid(opts.resultType, opts.trapType);
-  return `Friend Trap Lab\n${grid}\n${line}\nYour turn: ${opts.url}`;
+  return `Friend Trap Lab\n${resultSignatureText(opts.resultType, opts.trapType)}\n${line}\nYour turn: ${opts.url}`;
 }
 
 export function revengeShareText(friendName: string, url: string): string {

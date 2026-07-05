@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy, Link as LinkIcon, Share2 } from "lucide-react";
+import { LabIcon } from "@/components/LabIcon";
 
 interface SharePanelProps {
   url: string;
@@ -46,16 +46,16 @@ export function SharePanel({ url, text, title = "Friend Trap Lab", copyTextLabel
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
       {canNativeShare && (
         <button type="button" onClick={nativeShare} className="btn-primary flex-1 sm:flex-none">
-          <Share2 className="h-4 w-4" aria-hidden="true" />
+          <LabIcon name="share" />
           Share
         </button>
       )}
       <button type="button" onClick={() => copy(url, "link")} className="btn-ghost flex-1 sm:flex-none">
-        {copied === "link" ? <Check className="h-4 w-4 text-teal" aria-hidden="true" /> : <LinkIcon className="h-4 w-4" aria-hidden="true" />}
+        <LabIcon name={copied === "link" ? "check" : "link"} className={copied === "link" ? "h-4 w-4 text-teal" : undefined} />
         {copied === "link" ? "Link copied" : "Copy link"}
       </button>
       <button type="button" onClick={() => copy(text, "text")} className="btn-ghost flex-1 sm:flex-none">
-        {copied === "text" ? <Check className="h-4 w-4 text-teal" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+        <LabIcon name={copied === "text" ? "check" : "copy"} className={copied === "text" ? "h-4 w-4 text-teal" : undefined} />
         {copied === "text" ? "Text copied" : copyTextLabel}
       </button>
     </div>
