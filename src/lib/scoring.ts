@@ -1,4 +1,4 @@
-import type { AnswerPayload, ScoreOutcome, ResultType } from "@/types";
+import type { BespokeAnswer, ScoreOutcome, ResultType } from "@/types";
 import {
   ANCHOR_CHALLENGE,
   AVAILABILITY_CHALLENGE,
@@ -29,7 +29,7 @@ function outcome(
   };
 }
 
-export function scoreAttempt(answer: AnswerPayload): ScoreOutcome {
+export function scoreAttempt(answer: BespokeAnswer): ScoreOutcome {
   switch (answer.trapType) {
     case "anchor": {
       const { estimate, variant } = answer;
@@ -121,42 +121,6 @@ export function scoreAttempt(answer: AnswerPayload): ScoreOutcome {
       if (correctCount === 2) return outcome("suspicious-escape", detail);
       if (correctCount === 1) return outcome("lab-incident", detail);
       return outcome("beautiful-disaster", detail);
-    }
-
-    case "sunkcost": {
-      const { choice } = answer;
-      if (choice === "finish")
-        return outcome(
-          "lab-incident",
-          "You spent the next $100K to honor the last $900K. The $900K, notably, is still gone."
-        );
-      if (choice === "reprice")
-        return outcome(
-          "tiny-genius",
-          "“Would I start this today?” is the exact question that disarms this trap. You found it."
-        );
-      return outcome(
-        "clean-escape",
-        "You let the $900K go and judged only the future. Cold. Correct."
-      );
-    }
-
-    case "decoy": {
-      const { choice } = answer;
-      if (choice === "medium")
-        return outcome(
-          "beautiful-disaster",
-          "You chose the option whose only job was to make the Large look good — 50¢ less for strictly less popcorn."
-        );
-      if (choice === "large")
-        return outcome(
-          "suspicious-escape",
-          "You bought exactly what the menu architect wanted you to buy. (To be fair: best per-ounce deal in the building.)"
-        );
-      return outcome(
-        "clean-escape",
-        "You wanted a small and bought a small. The decoy died of loneliness."
-      );
     }
 
     case "confidence": {

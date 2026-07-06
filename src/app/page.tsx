@@ -4,8 +4,18 @@ import { EmailCTA } from "@/components/EmailCTA";
 import { InviteCard } from "@/components/InviteCard";
 import { LabIcon } from "@/components/LabIcon";
 import { StatsPreview } from "@/components/StatsPreview";
-import { getTrapOfTheDay, TRAP_LIST } from "@/lib/traps";
+import { getTrapOfTheDay, TRAP_LIST, TRAPS } from "@/lib/traps";
 import type { IconName } from "@/lib/icons";
+import type { TrapType } from "@/types";
+
+const FEATURED_TRAPS: TrapType[] = [
+  "anchor",
+  "montyhall",
+  "crt",
+  "barnum",
+  "survivorship",
+  "decoy",
+];
 
 const STEPS: Array<{ icon: IconName; title: string; text: string }> = [
   {
@@ -115,26 +125,38 @@ export default function HomePage() {
           </span>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {TRAP_LIST.map((t) => (
-            <Link
-              key={t.id}
-              href={`/make?type=${t.id}`}
-              className="glass group flex items-start gap-4 p-5 transition-all hover:border-teal/50 hover:bg-white/[0.07]"
-            >
-              <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
-                <LabIcon name={t.icon} className="h-6 w-6" />
-              </span>
-              <span>
-                <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="font-bold group-hover:text-teal">{t.labName}</span>
-                  <DangerMeter level={t.difficulty} />
+          {FEATURED_TRAPS.map((id) => {
+            const t = TRAPS[id];
+            return (
+              <Link
+                key={t.id}
+                href={`/make?type=${t.id}`}
+                className="glass group flex items-start gap-4 p-5 transition-all hover:border-teal/50 hover:bg-white/[0.07]"
+              >
+                <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
+                  <LabIcon name={t.icon} className="h-6 w-6" />
                 </span>
-                <span className="mt-1 block text-sm leading-snug text-fog">
-                  {t.shortDescription}
+                <span>
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="font-bold group-hover:text-teal">{t.labName}</span>
+                    <DangerMeter level={t.difficulty} />
+                  </span>
+                  <span className="mt-1 block text-sm leading-snug text-fog">
+                    {t.shortDescription}
+                  </span>
                 </span>
-              </span>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
+          <Link
+            href="/make"
+            className="glass group flex items-center justify-center gap-3 border-dashed p-5 text-center transition-all hover:border-teal/50 hover:bg-white/[0.07] sm:col-span-2"
+          >
+            <LabIcon name="trap" className="h-6 w-6 text-punch" />
+            <span className="font-bold group-hover:text-teal">
+              Browse all {TRAP_LIST.length} traps in the armory
+            </span>
+          </Link>
         </div>
       </section>
 

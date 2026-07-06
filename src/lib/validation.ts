@@ -53,6 +53,12 @@ export function containsLink(input: string): boolean {
 export const trapTypeSchema = z.enum([
   "anchor", "frameflip", "baserate", "pattern",
   "availability", "sunkcost", "decoy", "confidence",
+  "conjunction", "montyhall", "gambler", "endowment",
+  "ratio", "crt", "growth", "survivorship",
+  "omission", "moneyillusion", "letterfreq", "socialproof",
+  "optimism", "spotlight", "mentalacct", "certainty",
+  "present", "ellsberg", "barnum", "planning",
+  "attribute", "outcome",
 ]);
 
 export const toneSchema = z.enum(["nice", "spicy", "chaotic", "goblin"]);
@@ -68,6 +74,8 @@ export const createTrapSchema = z.object({
   tone: toneSchema.optional().default("spicy"),
   theme: themeSchema.optional().default("clean-lab"),
   customMessage: z.string().max(LIMITS.message + 60).optional().default(""),
+  // Mad-lib slot values; filtered against the template's slot defs server-side
+  slots: z.record(z.string().max(80)).optional().default({}),
   creatorSessionId: z.string().max(64).optional().default(""),
   source: z.string().max(32).optional().default("direct"),
   utm: z
@@ -86,7 +94,7 @@ const patternTest = z.object({
   c: z.number().int().min(-9999).max(9999),
 });
 
-export const answerSchema = z.discriminatedUnion("trapType", [
+const bespokeAnswerSchema = z.discriminatedUnion("trapType", [
   z.object({
     trapType: z.literal("anchor"),
     estimate: z.number().int().min(0).max(1_000_000),
@@ -112,19 +120,54 @@ export const answerSchema = z.discriminatedUnion("trapType", [
     picks: z.array(z.number().int().min(0).max(1)).length(3),
   }),
   z.object({
-    trapType: z.literal("sunkcost"),
-    choice: z.enum(["finish", "stop", "reprice"]),
-  }),
-  z.object({
-    trapType: z.literal("decoy"),
-    choice: z.enum(["small", "medium", "large"]),
-  }),
-  z.object({
     trapType: z.literal("confidence"),
     pick: z.enum(["jupiter", "saturn"]),
     confidence: z.number().int().min(50).max(100),
   }),
 ]);
+
+// Generic-engine answers. Option/variant ids are re-checked against the
+// trap's challenge spec server-side; these bounds just keep payloads sane.
+const genericAnswerSchema = z.discriminatedUnion("kind", [
+  z.object({
+    trapType: trapTypeSchema,
+    kind: z.literal("choice"),
+    choice: z.string().max(32),
+    variant: z.string().max(24).optional(),
+  }),
+  z.object({
+    trapType: trapTypeSchema,
+    kind: z.literal("two-round"),
+    r1: z.string().max(24),
+    r2: z.string().max(24),
+  }),
+  z.object({
+    trapType: trapTypeSchema,
+    kind: z.literal("numeric"),
+    value: z.number().min(0).max(1_000_000_000_000),
+    variant: z.string().max(24).optional(),
+  }),
+  z.object({
+    trapType: trapTypeSchema,
+    kind: z.literal("scale"),
+    rating: z.number().int().min(0).max(100),
+    variant: z.string().max(24).optional(),
+  }),
+  z.object({
+    trapType: trapTypeSchema,
+    kind: z.literal("dual-scale"),
+    rating1: z.number().int().min(0).max(100),
+    rating2: z.number().int().min(0).max(100),
+  }),
+  z.object({
+    trapType: trapTypeSchema,
+    kind: z.literal("planning"),
+    estimateSeconds: z.number().int().min(3).max(3600),
+    countAnswer: z.number().int().min(0).max(999),
+  }),
+]);
+
+export const answerSchema = z.union([bespokeAnswerSchema, genericAnswerSchema]);
 
 export const createAttemptSchema = z.object({
   trapId: z.string().min(1).max(64),

@@ -9,7 +9,14 @@ import { InviteCard } from "@/components/InviteCard";
 import { LabIcon } from "@/components/LabIcon";
 import { SharePanel } from "@/components/SharePanel";
 import { getSessionId } from "@/lib/client-session";
-import { THEME_LIST, TONE_LIST, TRAP_LIST, TRAPS } from "@/lib/traps";
+import {
+  CATEGORY_META,
+  CATEGORY_ORDER,
+  THEME_LIST,
+  TONE_LIST,
+  TRAP_LIST,
+  TRAPS,
+} from "@/lib/traps";
 import { cn } from "@/lib/utils";
 import type { Theme, Tone, TrapType } from "@/types";
 
@@ -40,6 +47,7 @@ export function TrapCreator() {
   const [tone, setTone] = useState<Tone>(isRevenge ? "spicy" : "spicy");
   const [theme, setTheme] = useState<Theme>("clean-lab");
   const [customMessage, setCustomMessage] = useState("");
+  const [slotValues, setSlotValues] = useState<Record<string, string>>({});
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState<CreatedTrap | null>(null);
@@ -70,6 +78,7 @@ export function TrapCreator() {
           tone,
           theme,
           customMessage,
+          slots: slotValues,
           creatorSessionId: getSessionId(),
           source: isRevenge ? "revenge" : "direct",
           utm,
@@ -110,38 +119,50 @@ export function TrapCreator() {
           >
             <h1 className="text-3xl font-bold tracking-tight">Choose your trap</h1>
             <p className="mt-2 text-fog">
-              Eight lab-grade brain traps. Pick the one your friend deserves.
+              Thirty lab-grade brain traps, each built on peer-reviewed
+              research. Pick the one your friend deserves.
             </p>
-            <div className="mt-6 grid gap-3">
-              {TRAP_LIST.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => {
-                    setTrapType(t.id);
-                    setStep("customize");
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className="glass group flex items-start gap-4 p-5 text-left transition-all hover:border-teal/50 hover:bg-white/[0.07]"
-                >
-                  <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
-                    <LabIcon name={t.icon} className="h-6 w-6" />
-                  </span>
-                  <span className="flex-1">
-                    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="font-bold">{t.labName}</span>
-                      <DangerMeter level={t.difficulty} />
-                    </span>
-                    <span className="mt-1 block text-sm leading-snug text-fog">
-                      {t.shortDescription}
-                    </span>
-                    <span className="mt-1.5 block font-mono text-[11px] uppercase tracking-widest text-fog/60">
-                      disguised as “{t.publicTitle}” · ~{t.estimatedTimeSeconds}s
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
+            {CATEGORY_ORDER.map((cat) => (
+              <section key={cat} className="mt-8" aria-label={CATEGORY_META[cat].label}>
+                <div className="flex items-baseline gap-3">
+                  <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-teal">
+                    {CATEGORY_META[cat].label}
+                  </h2>
+                  <span className="text-xs text-fog/70">{CATEGORY_META[cat].blurb}</span>
+                </div>
+                <div className="mt-3 grid gap-3">
+                  {TRAP_LIST.filter((t) => t.category === cat).map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setTrapType(t.id);
+                        setSlotValues({});
+                        setStep("customize");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="glass group flex items-start gap-4 p-5 text-left transition-all hover:border-teal/50 hover:bg-white/[0.07]"
+                    >
+                      <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink/60 text-teal">
+                        <LabIcon name={t.icon} className="h-6 w-6" />
+                      </span>
+                      <span className="flex-1">
+                        <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="font-bold">{t.labName}</span>
+                          <DangerMeter level={t.difficulty} />
+                        </span>
+                        <span className="mt-1 block text-sm leading-snug text-fog">
+                          {t.shortDescription}
+                        </span>
+                        <span className="mt-1.5 block font-mono text-[11px] uppercase tracking-widest text-fog/60">
+                          disguised as “{t.publicTitle}” · ~{t.estimatedTimeSeconds}s
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
           </motion.div>
         )}
 
@@ -212,6 +233,40 @@ export function TrapCreator() {
                   onChange={(e) => setCustomMessage(e.target.value)}
                 />
               </div>
+
+              {template.slots && template.slots.length > 0 && (
+                <fieldset className="glass !rounded-xl p-4">
+                  <legend className="label px-1">
+                    Mad-lib the scenario <span className="text-fog/60">(optional)</span>
+                  </legend>
+                  <p className="-mt-0.5 mb-3 text-xs text-fog">
+                    Make it ridiculous. The science underneath stays intact —
+                    only the flavor is yours.
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {template.slots.map((slot) => (
+                      <div key={slot.id}>
+                        <label htmlFor={`slot-${slot.id}`} className="label">
+                          {slot.label}
+                        </label>
+                        <input
+                          id={`slot-${slot.id}`}
+                          className="input !py-2.5 text-sm"
+                          placeholder={slot.defaultValue}
+                          maxLength={slot.maxLen ?? 40}
+                          value={slotValues[slot.id] ?? ""}
+                          onChange={(e) =>
+                            setSlotValues((prev) => ({ ...prev, [slot.id]: e.target.value }))
+                          }
+                        />
+                        {slot.hint && (
+                          <p className="mt-1 text-[11px] text-fog/60">{slot.hint}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
 
               <fieldset>
                 <legend className="label">Tone</legend>

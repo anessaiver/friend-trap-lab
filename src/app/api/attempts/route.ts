@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { newAttemptId } from "@/lib/ids";
 import { isAdminRequest, siteUrl } from "@/lib/env";
 import { scoreAttempt } from "@/lib/scoring";
+import { scoreGeneric } from "@/lib/challenge";
 import { RESULT_META, TRAPS } from "@/lib/traps";
 import { getAttempt, getTrap, getTrapAggregate, persistAttempt } from "@/lib/stats";
 import { createAttemptSchema } from "@/lib/validation";
@@ -49,8 +50,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Answer doesn't match this trap type." }, { status: 400 });
   }
 
-  const result = scoreAttempt(input.answer);
   const template = TRAPS[trap.trapType];
+  const result =
+    "kind" in input.answer
+      ? template.challenge
+        ? scoreGeneric(template.challenge, input.answer, trap.slots ?? {}, input.timeToAnswerMs)
+        : null
+      : scoreAttempt(input.answer);
+  if (!result) {
+    return NextResponse.json(
+      { error: "That answer doesn't fit this trap's mechanism." },
+      { status: 400 }
+    );
+  }
   const roastPool = RESULT_META[result.resultType].escaped
     ? template.praiseCopy
     : template.roastCopy;

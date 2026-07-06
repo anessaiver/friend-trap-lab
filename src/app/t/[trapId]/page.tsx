@@ -67,6 +67,7 @@ export default async function TrapPage({ params }: PageProps) {
     tone: trap.tone,
     theme: trap.theme,
     customMessage: trap.customMessage,
+    slots: trap.slots ?? {},
   };
 
   return <TrapRunner trap={publicTrap} />;

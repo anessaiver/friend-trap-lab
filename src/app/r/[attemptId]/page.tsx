@@ -7,9 +7,34 @@ import {
   getAnchorAggregates,
   getAttempt,
   getTrapAggregate,
+  getVariantAggregates,
 } from "@/lib/stats";
 import { RESULT_META, TRAPS } from "@/lib/traps";
 import type { AttemptRecord } from "@/types";
+
+/** Build the live A/B comparison block for generic variant traps. */
+async function loadVariantCompare(attempt: AttemptRecord) {
+  const challenge = TRAPS[attempt.trapType].challenge;
+  if (!challenge) return null;
+  if (challenge.mechanic !== "numeric" && challenge.mechanic !== "scale") return null;
+  if (!challenge.compare || !challenge.variants) return null;
+  try {
+    const variants = Object.keys(challenge.variants);
+    const aggs = await getVariantAggregates(attempt.trapType, variants);
+    const entries = variants
+      .filter((v) => aggs[v]?.mean !== null)
+      .map((v) => ({
+        label: challenge.compare!.labels[v] ?? v,
+        value: `${challenge.compare!.unit === "$" ? "$" : ""}${aggs[v].mean!.toLocaleString()}${
+          challenge.compare!.unit && challenge.compare!.unit !== "$" ? challenge.compare!.unit : ""
+        }`,
+      }));
+    if (entries.length < 2) return null;
+    return { title: challenge.compare.title, entries };
+  } catch {
+    return null;
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -62,11 +87,12 @@ export default async function ResultPage({ params }: PageProps) {
   const attempt = await loadAttempt(attemptId);
   if (!attempt) notFound();
 
-  const [aggregate, anchorAgg] = await Promise.all([
+  const [aggregate, anchorAgg, variantCompare] = await Promise.all([
     getTrapAggregate(attempt.trapId).catch(() => ({ attempts: 0, trapped: 0 })),
     attempt.trapType === "anchor"
       ? getAnchorAggregates().catch(() => null)
       : Promise.resolve(null),
+    loadVariantCompare(attempt),
   ]);
 
   return (
@@ -81,6 +107,7 @@ export default async function ResultPage({ params }: PageProps) {
         detailLine={attempt.detailLine}
         aggregate={aggregate}
         anchorAgg={anchorAgg}
+        variantCompare={variantCompare}
         shareUrl={`${siteUrl()}/r/${attempt.attemptId}`}
         isDemo={attempt.trapId.startsWith("demo")}
       />

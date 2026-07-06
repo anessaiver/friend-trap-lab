@@ -1,5 +1,8 @@
+import type { GenericChallenge, SlotDef } from "@/lib/challenge";
 import type { IconName } from "@/lib/icons";
 import type { ResultType, Theme, Tone, TrapType } from "@/types";
+import { EXTRA_TRAPS_1 } from "@/lib/traps-extra-1";
+import { EXTRA_TRAPS_2 } from "@/lib/traps-extra-2";
 
 /* ------------------------------------------------------------------ */
 /* Trap templates                                                      */
@@ -10,17 +13,36 @@ export interface Citation {
   url?: string;
 }
 
+export type TrapCategory = "numbers" | "money" | "stories" | "self";
+
+export const CATEGORY_META: Record<TrapCategory, { label: string; blurb: string }> = {
+  numbers: { label: "Odds & Numbers", blurb: "Where intuition does math badly." },
+  money: { label: "Money & Mine", blurb: "Wallets, ownership, and imaginary jars." },
+  stories: { label: "Frames & Stories", blurb: "Same facts, different outfit." },
+  self: { label: "You vs. You", blurb: "The calls your brain makes about itself." },
+};
+
+export const CATEGORY_ORDER: TrapCategory[] = ["numbers", "money", "stories", "self"];
+
 export interface TrapTemplate {
   id: TrapType;
   labName: string; // internal codename, revealed after the answer
   publicTitle: string; // what the friend sees before answering
   icon: IconName;
+  category: TrapCategory;
   shortDescription: string; // creator-facing menu copy (may hint at the mischief)
   preRevealFrame: string; // friend-facing framing, must not spoil the principle
   challengeText: string; // one-line brief shown on the challenge screen
-  answerType: "number" | "choice" | "sequence" | "multi-round";
+  answerType: "number" | "choice" | "sequence" | "multi-round" | "two-round" | "scale";
   difficulty: 1 | 2 | 3;
   estimatedTimeSeconds: number;
+  /**
+   * Creator-customizable flavor (proper nouns, silly quantities). Structural
+   * numbers — probabilities, base rates, anchors, prices — are never slots.
+   */
+  slots?: SlotDef[];
+  /** Data-driven challenge; traps without one use a bespoke component. */
+  challenge?: GenericChallenge;
   // Human-readable logic notes (shown in admin content review, used by scoring.ts)
   trapCondition: string;
   escapeCondition: string;
@@ -37,12 +59,13 @@ export interface TrapTemplate {
   ogImageSubtitle: string;
 }
 
-export const TRAPS: Record<TrapType, TrapTemplate> = {
+const CORE_TRAPS = {
   anchor: {
     id: "anchor",
     labName: "The Anchor Drop",
     publicTitle: "The 10-Second Estimate Test",
     icon: "anchor",
+    category: "numbers",
     shortDescription:
       "A giant useless number quietly leans on their estimate. They'll swear it didn't.",
     preRevealFrame: "One estimate. Ten seconds. Don't overthink it.",
@@ -88,6 +111,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Frame Flip",
     publicTitle: "The Emergency Decision Test",
     icon: "exchange",
+    category: "stories",
     shortDescription:
       "Two emergencies, same math, different outfits. Watch their answers disagree with each other.",
     preRevealFrame: "Two rapid-fire lab emergencies. Trust your gut.",
@@ -131,6 +155,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Base Rate Goblin",
     publicTitle: "The Detective Test",
     icon: "detective",
+    category: "stories",
     shortDescription:
       "One dramatic clue vs one boring number. The boring number is armed.",
     preRevealFrame: "A quick lab whodunit. Science demands answers.",
@@ -174,6 +199,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Pattern Gremlin",
     publicTitle: "The Pattern IQ Test",
     icon: "binary",
+    category: "self",
     shortDescription:
       "They'll hunt for proof they're right. The rule eats people who only confirm.",
     preRevealFrame: "Crack the lock's number rule. Test three codes, then call it.",
@@ -218,6 +244,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Availability Ambush",
     publicTitle: "The Danger Ranking Test",
     icon: "news",
+    category: "self",
     shortDescription:
       "Three 'which is deadlier' calls. Their newsfeed answers before they do.",
     preRevealFrame: "Three quick calls. Which one ends more lives in a typical year?",
@@ -260,13 +287,51 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Sunk Cost Swamp",
     publicTitle: "The Project Rescue Test",
     icon: "quicksand",
+    category: "money",
     shortDescription:
-      "18 months and $900K of regret, served on a silver platter. See if they keep paying for it.",
+      "Months of work and a pile of money, freshly obsolete. See if they keep paying for it.",
     preRevealFrame: "You're the lab director. One budget call. Go.",
-    challengeText: "Project Hoverboot is 90% built — and freshly obsolete. Your call.",
+    challengeText: "The project is 90% built — and freshly obsolete. Your call.",
     answerType: "choice",
     difficulty: 2,
     estimatedTimeSeconds: 25,
+    slots: [
+      { id: "project", label: "The doomed project", defaultValue: "Project Hoverboot", maxLen: 36 },
+      { id: "spent", label: "Already sunk (money/effort)", defaultValue: "$900K", maxLen: 24 },
+      { id: "months", label: "Time already spent", defaultValue: "18 months", maxLen: 24 },
+      { id: "cost", label: "Cost to finish", defaultValue: "$100K", maxLen: 24 },
+    ],
+    challenge: {
+      mechanic: "choice",
+      chip: "director's desk",
+      chipIcon: "briefcase",
+      story:
+        "{months} and {spent} went into {project}. It's 90% built. This morning, a rival shipped a better version at half the price. Finishing costs another {cost}.",
+      question: "What do you do?",
+      lockLabel: "Sign the budget",
+      options: [
+        {
+          id: "finish",
+          label: "Finish it — we're 90% there and {spent} deep",
+          result: "lab-incident",
+          detail:
+            "You spent the next {cost} to honor the {spent} already gone. The {spent}, notably, is still gone.",
+        },
+        {
+          id: "stop",
+          label: "Stop now — put the {cost} into the next idea",
+          result: "clean-escape",
+          detail: "You let the {spent} go and judged only the future. Cold. Correct.",
+        },
+        {
+          id: "reprice",
+          label: "Re-price from zero: would I start {project} today?",
+          result: "tiny-genius",
+          detail:
+            "“Would I start {project} today?” is the exact question that disarms this trap. You found it.",
+        },
+      ],
+    },
     trapCondition: "Finishes the doomed project because of what's already been spent.",
     escapeCondition: "Ignores the sunk $900K and decides on future costs and payoffs only.",
     scoringLogic:
@@ -302,13 +367,50 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Decoy Duck",
     publicTitle: "The Menu Genius Test",
     icon: "duck",
+    category: "money",
     shortDescription:
-      "Three popcorn sizes. One exists only to whisper at their wallet.",
-    preRevealFrame: "Movie night. Pick your popcorn like a genius.",
+      "Three snack sizes. One exists only to whisper at their wallet.",
+    preRevealFrame: "Movie night. Order like a genius.",
     challengeText: "Three sizes. One correct personality. Choose.",
     answerType: "choice",
     difficulty: 1,
     estimatedTimeSeconds: 15,
+    slots: [
+      { id: "snack", label: "The snack", defaultValue: "popcorn", maxLen: 28 },
+    ],
+    challenge: {
+      mechanic: "choice",
+      chip: "concession stand",
+      chipIcon: "popcorn",
+      story: "The lab vending machine, movie night edition:",
+      question: "Pick your {snack}:",
+      lockLabel: "Order it",
+      options: [
+        {
+          id: "small",
+          label: "Small {snack} — $3.50",
+          sub: "fits one hand",
+          result: "clean-escape",
+          detail: "You wanted a small and bought a small. The decoy died of loneliness.",
+        },
+        {
+          id: "medium",
+          label: "Medium {snack} — $6.50",
+          sub: "fits one lap",
+          result: "beautiful-disaster",
+          detail:
+            "You chose the option whose only job was to make the Large look good — 50¢ less for strictly less {snack}.",
+        },
+        {
+          id: "large",
+          label: "Large {snack} — $7.00",
+          sub: "fits one lifestyle",
+          result: "suspicious-escape",
+          detail:
+            "You bought exactly what the menu architect wanted you to buy. (To be fair: best per-ounce deal in the building.)",
+        },
+      ],
+    },
     trapCondition:
       "Picks the decoy itself (Medium, strictly worse than Large) — or gets steered to Large by the decoy's whispering.",
     escapeCondition: "Buys what they actually wanted before the menu started performing.",
@@ -345,6 +447,7 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
     labName: "The Confidence Cannon",
     publicTitle: "The Two-Question Genius Test",
     icon: "speakerphone",
+    category: "self",
     shortDescription:
       "One trivia question, one confidence slider. The slider does the damage.",
     preRevealFrame: "One question. Then say how sure you are. That's the whole test.",
@@ -381,7 +484,14 @@ export const TRAPS: Record<TrapType, TrapTemplate> = {
       "{creator} fired the confidence cannon at me. My certainty matched my accuracy. Apparently that's rare.",
     ogImageSubtitle: "The Two-Question Genius Test",
   },
-};
+} satisfies Partial<Record<TrapType, TrapTemplate>>;
+
+export const TRAPS: Record<TrapType, TrapTemplate> = {
+  ...CORE_TRAPS,
+  ...Object.fromEntries(
+    [...EXTRA_TRAPS_1, ...EXTRA_TRAPS_2].map((t) => [t.id, t])
+  ),
+} as Record<TrapType, TrapTemplate>;
 
 export const TRAP_LIST: TrapTemplate[] = Object.values(TRAPS);
 
@@ -480,26 +590,6 @@ export const AVAILABILITY_CHALLENGE = {
 } as const satisfies {
   question: string;
   rounds: readonly { options: readonly { label: string; icon: IconName }[]; correct: number; note: string }[];
-};
-
-export const SUNKCOST_CHALLENGE = {
-  story:
-    "18 months and $900K went into Project Hoverboot. It's 90% built. This morning, a rival shipped a better version at half the price. Finishing costs another $100K.",
-  question: "What do you do?",
-  options: [
-    { id: "finish", label: "Finish it — we're 90% there and $900K deep" },
-    { id: "stop", label: "Stop now — put the $100K into the next idea" },
-    { id: "reprice", label: "Re-price from zero: would I start Hoverboot today?" },
-  ] as const,
-};
-
-export const DECOY_CHALLENGE = {
-  intro: "The lab vending machine, movie night edition:",
-  options: [
-    { id: "small", label: "Small popcorn", price: "$3.50", tag: "fits one hand" },
-    { id: "medium", label: "Medium popcorn", price: "$6.50", tag: "fits one lap" },
-    { id: "large", label: "Large popcorn", price: "$7.00", tag: "fits one lifestyle" },
-  ] as const,
 };
 
 export const CONFIDENCE_CHALLENGE = {

@@ -23,6 +23,7 @@ export interface ResultRevealProps {
     high: { count: number; mean: number | null };
     low: { count: number; mean: number | null };
   } | null;
+  variantCompare: { title: string; entries: { label: string; value: string }[] } | null;
   shareUrl: string;
   isDemo: boolean;
 }
@@ -190,6 +191,20 @@ export function ResultReveal(props: ResultRevealProps) {
             Sample size so far: {props.aggregate.attempts || "just you"}. A
             statistician is watching us with one eyebrow raised.
           </p>
+        )}
+        {props.variantCompare && (
+          <div className="mt-4 rounded-xl border border-white/10 bg-ink/50 p-4">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-fog">
+              {props.variantCompare.title}
+            </p>
+            <div className="mt-2 space-y-1.5">
+              {props.variantCompare.entries.map((e) => (
+                <p key={e.label} className="text-sm text-frost">
+                  {e.label}: <span className="font-bold text-grape">{e.value}</span> on average
+                </p>
+              ))}
+            </div>
+          </div>
         )}
         {props.anchorAgg?.high.mean && props.anchorAgg?.low.mean && (
           <div className="mt-4 rounded-xl border border-white/10 bg-ink/50 p-4">

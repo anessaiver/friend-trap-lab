@@ -3,6 +3,7 @@ import { newTrapId } from "@/lib/ids";
 import { isAdminRequest, siteUrl } from "@/lib/env";
 import { creatorShareText } from "@/lib/share";
 import { getTrap, persistTrap } from "@/lib/stats";
+import { TRAPS } from "@/lib/traps";
 import {
   containsBlockedLanguage,
   containsLink,
@@ -44,6 +45,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: FRIENDLY_LINK_ERROR }, { status: 400 });
   }
 
+  // Resolve mad-lib slots: sanitize creator values, fall back to defaults.
+  // Only slot ids the template defines are accepted; structural numbers
+  // aren't slots, so scoring can't be broken from here.
+  const template = TRAPS[input.trapType];
+  const slots: Record<string, string> = {};
+  for (const def of template.slots ?? []) {
+    const cleaned = sanitizeText(input.slots[def.id] ?? "", def.maxLen ?? 40);
+    const value = cleaned || def.defaultValue;
+    if (containsBlockedLanguage(value)) {
+      return NextResponse.json({ error: FRIENDLY_LANGUAGE_ERROR }, { status: 400 });
+    }
+    if (containsLink(value)) {
+      return NextResponse.json({ error: FRIENDLY_LINK_ERROR }, { status: 400 });
+    }
+    slots[def.id] = value;
+  }
+
   const trapId = newTrapId();
   const isTest = isAdminRequest(req.headers.get("x-lab-test"));
 
@@ -56,6 +74,7 @@ export async function POST(req: NextRequest) {
     tone: input.tone,
     theme: input.theme,
     customMessage,
+    slots,
     shareSlug: trapId,
     creatorSessionId: input.creatorSessionId,
     source: input.source,
@@ -97,6 +116,7 @@ export async function GET(req: NextRequest) {
       tone: trap.tone,
       theme: trap.theme,
       customMessage: trap.customMessage,
+      slots: trap.slots ?? {},
     };
     return NextResponse.json({ trap: publicTrap });
   } catch (err) {

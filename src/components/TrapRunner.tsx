@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { GenericChallengeView } from "@/components/GenericChallenge";
 import { InviteCard } from "@/components/InviteCard";
 import { LabIcon } from "@/components/LabIcon";
 import { getSessionId } from "@/lib/client-session";
@@ -11,10 +12,8 @@ import {
   AVAILABILITY_CHALLENGE,
   BASERATE_CHALLENGE,
   CONFIDENCE_CHALLENGE,
-  DECOY_CHALLENGE,
   FRAMEFLIP_CHALLENGE,
   PATTERN_CHALLENGE,
-  SUNKCOST_CHALLENGE,
   TONES,
   TRAPS,
 } from "@/lib/traps";
@@ -125,7 +124,7 @@ export function TrapRunner({ trap }: { trap: PublicTrap }) {
                 {template.publicTitle}
               </span>
             </div>
-            <Challenge trapType={trap.trapType} onSubmit={submit} />
+            <Challenge trap={trap} onSubmit={submit} />
           </motion.div>
         )}
 
@@ -200,13 +199,25 @@ function SuspenseOverlay() {
 /* ------------------------------------------------------------------ */
 
 function Challenge({
-  trapType,
+  trap,
   onSubmit,
 }: {
-  trapType: PublicTrap["trapType"];
+  trap: PublicTrap;
   onSubmit: (answer: AnswerPayload) => void;
 }) {
-  switch (trapType) {
+  const template = TRAPS[trap.trapType];
+  if (template.challenge) {
+    return (
+      <GenericChallengeView
+        challenge={template.challenge}
+        slots={trap.slots ?? {}}
+        onSubmit={(generic) =>
+          onSubmit({ trapType: trap.trapType, ...generic } as AnswerPayload)
+        }
+      />
+    );
+  }
+  switch (trap.trapType) {
     case "anchor":
       return <AnchorChallenge onSubmit={onSubmit} />;
     case "frameflip":
@@ -217,12 +228,10 @@ function Challenge({
       return <PatternChallenge onSubmit={onSubmit} />;
     case "availability":
       return <AvailabilityChallenge onSubmit={onSubmit} />;
-    case "sunkcost":
-      return <SunkCostChallenge onSubmit={onSubmit} />;
-    case "decoy":
-      return <DecoyChallenge onSubmit={onSubmit} />;
     case "confidence":
       return <ConfidenceChallenge onSubmit={onSubmit} />;
+    default:
+      return null; // every non-bespoke trap has a challenge spec
   }
 }
 
@@ -554,65 +563,6 @@ function AvailabilityChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
         </p>
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-/* ---------- 6. Sunk cost ---------- */
-
-function SunkCostChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
-  const [choice, setChoice] = useState<"finish" | "stop" | "reprice" | null>(null);
-  return (
-    <div className="glass p-6">
-      <div className="chip">
-        <LabIcon name="briefcase" className="h-3.5 w-3.5 text-teal" />
-        director's desk
-      </div>
-      <p className="mt-3 text-[15px] leading-relaxed text-frost">{SUNKCOST_CHALLENGE.story}</p>
-      <h2 className="mt-4 text-xl font-bold">{SUNKCOST_CHALLENGE.question}</h2>
-      <div className="mt-4 flex flex-col gap-3">
-        {SUNKCOST_CHALLENGE.options.map((o) => (
-          <OptionButton key={o.id} selected={choice === o.id} onClick={() => setChoice(o.id)}>
-            {o.label}
-          </OptionButton>
-        ))}
-      </div>
-      <LockIn
-        disabled={!choice}
-        onClick={() => choice && onSubmit({ trapType: "sunkcost", choice })}
-        label="Sign the budget"
-      />
-    </div>
-  );
-}
-
-/* ---------- 7. Decoy ---------- */
-
-function DecoyChallenge({ onSubmit }: { onSubmit: SubmitFn }) {
-  const [choice, setChoice] = useState<"small" | "medium" | "large" | null>(null);
-  return (
-    <div className="glass p-6">
-      <div className="chip">
-        <LabIcon name="popcorn" className="h-3.5 w-3.5 text-teal" />
-        concession stand
-      </div>
-      <p className="mt-3 text-[15px] text-fog">{DECOY_CHALLENGE.intro}</p>
-      <div className="mt-4 flex flex-col gap-3">
-        {DECOY_CHALLENGE.options.map((o) => (
-          <OptionButton key={o.id} selected={choice === o.id} onClick={() => setChoice(o.id)}>
-            <span className="flex items-baseline justify-between gap-3">
-              <span className="font-semibold">{o.label}</span>
-              <span className="font-mono text-lg text-teal">{o.price}</span>
-            </span>
-            <span className="text-sm text-fog">{o.tag}</span>
-          </OptionButton>
-        ))}
-      </div>
-      <LockIn
-        disabled={!choice}
-        onClick={() => choice && onSubmit({ trapType: "decoy", choice })}
-        label="Order it"
-      />
-    </div>
   );
 }
 

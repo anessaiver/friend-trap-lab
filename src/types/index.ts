@@ -1,4 +1,5 @@
 export type TrapType =
+  // the original eight
   | "anchor"
   | "frameflip"
   | "baserate"
@@ -6,7 +7,30 @@ export type TrapType =
   | "availability"
   | "sunkcost"
   | "decoy"
-  | "confidence";
+  | "confidence"
+  // the expansion
+  | "conjunction"
+  | "montyhall"
+  | "gambler"
+  | "endowment"
+  | "ratio"
+  | "crt"
+  | "growth"
+  | "survivorship"
+  | "omission"
+  | "moneyillusion"
+  | "letterfreq"
+  | "socialproof"
+  | "optimism"
+  | "spotlight"
+  | "mentalacct"
+  | "certainty"
+  | "present"
+  | "ellsberg"
+  | "barnum"
+  | "planning"
+  | "attribute"
+  | "outcome";
 
 export type Tone = "nice" | "spicy" | "chaotic" | "goblin";
 
@@ -28,15 +52,18 @@ export type ResultType =
 
 export type PatternGuess = "plus-two" | "evens-up" | "any-increasing" | "sum-twelve";
 
-export type AnswerPayload =
+import type { GenericAnswer } from "@/lib/challenge";
+
+/** Bespoke-mechanic answers (the traps with hand-built components). */
+export type BespokeAnswer =
   | { trapType: "anchor"; estimate: number; variant: "high" | "low" }
   | { trapType: "frameflip"; q1: "sure" | "gamble"; q2: "sure" | "gamble" }
   | { trapType: "baserate"; pick: "flagged" | "standard"; confidence: number }
   | { trapType: "pattern"; tests: { a: number; b: number; c: number }[]; guess: PatternGuess }
   | { trapType: "availability"; picks: number[] }
-  | { trapType: "sunkcost"; choice: "finish" | "stop" | "reprice" }
-  | { trapType: "decoy"; choice: "small" | "medium" | "large" }
   | { trapType: "confidence"; pick: "jupiter" | "saturn"; confidence: number };
+
+export type AnswerPayload = BespokeAnswer | ({ trapType: TrapType } & GenericAnswer);
 
 export interface UtmFields {
   source?: string;
@@ -53,6 +80,8 @@ export interface TrapRecord {
   tone: Tone;
   theme: Theme;
   customMessage: string;
+  /** Resolved mad-lib slot values (defaults applied at creation). */
+  slots: Record<string, string>;
   shareSlug: string;
   creatorSessionId: string;
   source: string;
@@ -70,6 +99,7 @@ export interface PublicTrap {
   tone: Tone;
   theme: Theme;
   customMessage: string;
+  slots: Record<string, string>;
 }
 
 export interface AttemptRecord {

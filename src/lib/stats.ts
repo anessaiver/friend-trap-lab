@@ -61,10 +61,18 @@ export async function persistAttempt(attempt: AttemptRecord): Promise<void> {
     if (attempt.isTrapped) p.hincrby(KEYS.trapStats(attempt.trapId), "trapped", 1);
     p.hincrby(KEYS.statsDaily(todayKey()), "attempts", 1);
     p.expire(KEYS.statsDaily(todayKey()), DAILY_TTL_SECONDS);
-    if (attempt.trapType === "anchor" && attempt.answer.trapType === "anchor") {
+    if (attempt.trapType === "anchor" && "estimate" in attempt.answer) {
       const variant = attempt.answer.variant;
       p.hincrby(KEYS.statsAnchor(variant), "count", 1);
       p.hincrby(KEYS.statsAnchor(variant), "sum", Math.round(attempt.answer.estimate));
+    }
+    // Generic variant traps (endowment, outcome, …): track per-variant means
+    // so the reveal can show the group split live.
+    const a = attempt.answer;
+    if ("kind" in a && (a.kind === "numeric" || a.kind === "scale") && a.variant) {
+      const key = KEYS.statsVariant(attempt.trapType, a.variant);
+      p.hincrby(key, "count", 1);
+      p.hincrby(key, "sum", Math.round(a.kind === "numeric" ? a.value : a.rating));
     }
   }
   await p.exec();
@@ -99,6 +107,23 @@ export async function getTypeAggregate(trapType: TrapType): Promise<TrapAggregat
 export interface AnchorAggregates {
   high: { count: number; mean: number | null };
   low: { count: number; mean: number | null };
+}
+
+/** Per-variant means for generic variant traps (endowment, outcome, …). */
+export async function getVariantAggregates(
+  trapType: TrapType,
+  variants: string[]
+): Promise<Record<string, { count: number; mean: number | null }>> {
+  const redis = getRedis();
+  const p = redis.pipeline();
+  for (const v of variants) p.hgetall(KEYS.statsVariant(trapType, v));
+  const rows = await p.exec<Array<Record<string, unknown> | null>>();
+  const result: Record<string, { count: number; mean: number | null }> = {};
+  variants.forEach((v, i) => {
+    const count = num(rows[i]?.count);
+    result[v] = { count, mean: count >= 4 ? Math.round(num(rows[i]?.sum) / count) : null };
+  });
+  return result;
 }
 
 export async function getAnchorAggregates(): Promise<AnchorAggregates> {

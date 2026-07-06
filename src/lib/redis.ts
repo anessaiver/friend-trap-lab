@@ -23,6 +23,7 @@ export const KEYS = {
   statsGlobal: "stats:global",
   statsType: (t: string) => `stats:type:${t}`,
   statsAnchor: (variant: "high" | "low") => `stats:anchor:${variant}`,
+  statsVariant: (trapType: string, variant: string) => `stats:variant:${trapType}:${variant}`,
   statsDaily: (day: string) => `stats:daily:${day}`,
   emailSignups: "email:signups",
   testTraps: "test:traps",

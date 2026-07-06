@@ -1,5 +1,11 @@
-import { TRAP_TYPES } from "@/lib/traps";
+import { TRAP_TYPES, TRAPS } from "@/lib/traps";
 import type { TrapRecord, TrapType } from "@/types";
+
+function defaultSlots(trapType: TrapType): Record<string, string> {
+  return Object.fromEntries(
+    (TRAPS[trapType].slots ?? []).map((s) => [s.id, s.defaultValue])
+  );
+}
 
 /**
  * The homepage "try a random trap" flow uses a virtual trap owned by The Lab.
@@ -30,6 +36,7 @@ export function synthesizeDemoTrap(trapId: string, trapType: TrapType): TrapReco
     tone: "goblin",
     theme: "clean-lab",
     customMessage: "",
+    slots: defaultSlots(trapType),
     shareSlug: trapId,
     creatorSessionId: "",
     source: "demo",
