@@ -41,3 +41,6 @@ next-env.d.ts
 # local tooling
 .claude/
 test-output*
+
+# prompt distribution bundle — delivered by email, not published in the repo
+prompts/

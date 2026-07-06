@@ -21,6 +21,7 @@ export async function GET() {
       status: healthy ? "ok" : "degraded",
       redis: redisStatus,
       beehiivConfigured: hasBeehiivConfig(),
+      beehiivAutomationConfigured: Boolean(process.env.BEEHIIV_AUTOMATION_ID),
       adminConfigured: Boolean(process.env.ADMIN_SECRET),
       timestamp: new Date().toISOString(),
     },

@@ -17,6 +17,10 @@ export async function subscribeToBeehiiv(
 ): Promise<SubscribeResult> {
   const apiKey = process.env.BEEHIIV_API_KEY;
   const publicationId = process.env.BEEHIIV_PUBLICATION_ID;
+  // When set, new signups are enrolled into this automation (the custom
+  // welcome flow) and Beehiiv's default welcome email is suppressed.
+  // The automation needs its "Add by API" trigger enabled in Beehiiv.
+  const automationId = process.env.BEEHIIV_AUTOMATION_ID;
   if (!apiKey || !publicationId) {
     return {
       ok: false,
@@ -39,7 +43,8 @@ export async function subscribeToBeehiiv(
         body: JSON.stringify({
           email,
           reactivate_existing: true,
-          send_welcome_email: true,
+          send_welcome_email: !automationId,
+          automation_ids: automationId ? [automationId] : undefined,
           utm_source: NEWSLETTER_SOURCE,
           utm_medium: "site",
           utm_campaign: opts.source ?? "friend-trap-lab",
